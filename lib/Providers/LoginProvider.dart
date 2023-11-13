@@ -51,6 +51,7 @@ class LoginProvider with ChangeNotifier {
         var sub_message = responseData['sub_message'];
         await prefs.setString('getaccesToken', accessToken);
         await prefs.setString('sub_message', sub_message);  
+        await prefs.setString('userEmail', emailController);  
         // ignore: avoid_print
         print(accessToken);
         ScaffoldMessenger.of(context).showSnackBar(

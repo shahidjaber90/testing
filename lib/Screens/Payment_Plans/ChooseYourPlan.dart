@@ -97,13 +97,12 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
   Map<String, dynamic>? paymentIntentData;
   Future<void> makePayment() async {
     try {
-      paymentIntentData = await createPaymentIntent('15', 'USD');
+      paymentIntentData = await createPaymentIntent('16', 'USD');
       await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
-        // paymentIntentClientSecret:
-        //     paymentIntentData![customer_subscription_secret].toString(),
         paymentIntentClientSecret: paymentIntentData!['client_secret'],
-        setupIntentClientSecret: customer_subscription_secret,
+        setupIntentClientSecret:
+            paymentIntentData![customer_subscription_secret.toString()],
         googlePay: const PaymentSheetGooglePay(
           merchantCountryCode: 'US',
           testEnv: true,
@@ -320,6 +319,8 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
                                         prizeID = data[index]['price_id'];
                                         payment =
                                             data[index]['amount'].toString();
+                                        print(
+                                            'payment plan selected: $payment');
                                         print(data[index]['name']);
                                         print(data[index]['amount']);
                                         print(data[index]['currency']);

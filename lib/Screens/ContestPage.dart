@@ -207,6 +207,7 @@ class _ContestPageState extends State<ContestPage> {
                             itemCount: data.length,
                             itemBuilder: (context, index) {
                               return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
                                 height: 380,
                                 width: double.infinity,
                                 decoration: BoxDecoration(

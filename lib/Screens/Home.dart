@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:http_parser/http_parser.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:colorvelvetus/Providers/LogoutProvider.dart';
 import 'package:colorvelvetus/Screens/PaintingWork/Painting_root.dart';
 import 'package:colorvelvetus/Screens/Payment_Plans/ChooseYourPlan.dart';
@@ -14,6 +18,8 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:colorvelvetus/LocalData/LocalData.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:colorvelvetus/Widgets/MyText.dart';
+
+import 'package:path_provider/path_provider.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -46,25 +52,147 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   ];
   int activeIndex = 0;
 
-  // upload image
-  Future<void> uploadNetworkImage(String imageUrl) async {
-  try {
-    Dio dio = Dio();
-    FormData formData = FormData.fromMap({
-      'email':
-      'image': imageUrl,
-    });
+  // download image to url
+  File? _imageFile;
+  Future<void> _downloadImage(String imageUrl) async {
+    http.Response response = await http.get(Uri.parse(imageUrl));
 
-    Response response = await dio.post(
-      'https://cv.glamouride.org/api/upload-art',
-      data: formData,
+    // Check if the request was successful
+    if (response.statusCode == 200) {
+      Uint8List bytes = response.bodyBytes;
+      ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      ui.FrameInfo frameInfo = await codec.getNextFrame();
+      _imageFile = await _saveImage(frameInfo.image);
+      setState(() {}); // Trigger a rebuild to display the image
+    } else {
+      throw Exception('Failed to load image');
+    }
+  }
+
+  Future<File> _saveImage(ui.Image image) async {
+    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    List<int> pngBytes = byteData!.buffer.asUint8List();
+    Directory tempDir = await getTemporaryDirectory();
+    File file = File('${tempDir.path}/image.png');
+    await file.writeAsBytes(pngBytes);
+    return file;
+  }
+
+  // upload image
+  Future<void> uploadNetworkImage(String artID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userEmail = prefs.getString('userEmail').toString();
+    final url = Uri.parse('https://cv.glamouride.org/api/upload-art');
+    var request = http.MultipartRequest("POST", url);
+
+    // // Add text fields
+    request.fields['email'] = userEmail;
+    request.fields['art_id'] = artID;
+
+    request.files.add(
+      http.MultipartFile(
+        'profile_pic',
+        _imageFile!.readAsBytes().asStream(),
+        _imageFile!.lengthSync(),
+        // filename: imageName,
+        contentType: MediaType('image', 'jpg'),
+      ),
     );
 
-    print('Upload response: ${response.data}');
-  } catch (error) {
-    print('Error uploading image: $error');
+    final response = await request.send();
+
+    var result = await response.stream.bytesToString();
+    // String message = result[0];
+    if (response.statusCode == 200) {
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     backgroundColor: ColorConstant.whiteColor,
+      //     content: Text(
+      //       message,
+      //       style: TextStyle(color: ColorConstant.buttonColor2),
+      //     ),
+      //   ),
+      // );
+
+      print('API response: ${response.stream}');
+    } else {
+      // Request failed, handle the error
+      print('Error:>>> ${response.statusCode}');
+      // print('response data ${message}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'SignUp Failed: This email is already exists.',
+            style: TextStyle(color: ColorConstant.whiteColor),
+          ),
+        ),
+      );
+    }
   }
-}
+
+  // upload image 2
+  Future<void> uploadNetworkImage2(String artID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userEmail = prefs.getString('userEmail').toString();
+    String myToken = prefs.getString('getaccesToken').toString();
+    print('userEmail: $userEmail');
+    print('artID: $artID');
+    print('artID: $_imageFile');
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://cv.glamouride.org/api/upload-art'),
+      );
+
+      // Add headers, including the access token
+      request.headers['Authorization'] = 'Bearer $myToken';
+
+      request.fields['email'] = userEmail;
+      request.fields['art_id'] = artID;
+      request.files.add(
+        await http.MultipartFile.fromPath('image', _imageFile!.path),
+      );
+
+      var response = await request.send();
+
+      // Check the response
+      if (response.statusCode == 200) {
+        String message = 'Image uploaded successfully';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
+      } else {
+        print('Failed to upload image. Status code: ${response.statusCode}');
+        String message = 'Failed to upload image. Status code';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
+        print('Response body: ${await response.stream.bytesToString()}');
+      }
+    } catch (e) {
+      print('Error Reasone is:: $e');
+    }
+  }
 
   //
 
@@ -391,10 +519,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                         PaintingRootPage(
-                                          artID: data[index]['id'].toString(),
-                                        ),
+                                    builder: (context) => PaintingRootPage(
+                                      artID: data[index]['id'].toString(),
+                                    ),
                                   ),
                                 );
                                 // Navigator.push(
@@ -411,16 +538,50 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                 //   ),
                                 // );
                               },
-                              child: Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: ColorConstant.whiteColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Image.network(
-                                  data[index]['image'],
-                                  fit: BoxFit.cover,
-                                ),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: ColorConstant.whiteColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: data[index]['image_path'] == null
+                                        ? Image.network(
+                                            data[index]['image'],
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Text(data[index]['art_type']),
+                                  ),
+                                  Positioned(
+                                    right: 0,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 12),
+                                      height: 32,
+                                      width: 32,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: ColorConstant.blackColor,
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          await _downloadImage(
+                                              data[index]['image']);
+                                          uploadNetworkImage2(
+                                              data[index]['id'].toString());
+                                        },
+                                        child: _imageFile != null
+                                            ? Image.file(_imageFile!)
+                                            : Icon(
+                                                Icons.add,
+                                                color: Colors.green.shade500,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             );
                           },

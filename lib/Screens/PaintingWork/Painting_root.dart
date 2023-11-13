@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:colorvelvetus/Providers/ResetPassword.dart';
 import 'package:http/http.dart' as http;
 import 'package:colorvelvetus/Screens/PaintingWork/WorldMap.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
@@ -6,6 +7,8 @@ import 'package:colorvelvetus/Widgets/MyText.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:pinch_zoom/pinch_zoom.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PaintingRootPage extends StatefulWidget {
@@ -21,33 +24,7 @@ class PaintingRootPage extends StatefulWidget {
 
 class _PaintingRootPageState extends State<PaintingRootPage> {
   bool isAdLoaded = false;
-  Color selectedColor = Colors.transparent;
-  List<Color> colors = [
-    const Color(0XFFFFFFFF),
-    const Color(0XFF000000),
-    const Color.fromARGB(255, 251, 8, 8),
-    const Color(0XFF8B0000),
-    const Color.fromARGB(255, 127, 208, 95),
-    const Color.fromARGB(255, 34, 147, 178),
-    const Color(0XFFCD5C5C),
-    const Color(0XFFDC143C),
-    const Color(0XFFFF6347),
-    const Color.fromARGB(255, 152, 72, 72),
-    const Color.fromARGB(255, 203, 42, 176),
-    const Color(0XFFE9967A),
-    const Color(0XFFFFE4E1),
-    const Color.fromARGB(255, 15, 75, 160),
-    const Color.fromARGB(255, 180, 180, 180),
-    const Color.fromARGB(255, 128, 124, 0),
-    const Color(0XFF00008B),
-    const Color.fromARGB(255, 134, 134, 193),
-    const Color(0XFF4169E1),
-    const Color(0XFF87CEFA),
-    const Color(0XFFADD8E6),
-    const Color(0XFF00BFFF),
-    const Color(0XFF6495ED),
-    const Color(0XFF89CFF0),
-  ];
+  ResetPasswordProvider colorChangeProvider = ResetPasswordProvider();
   //
 
   String message = '';
@@ -195,227 +172,189 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        // appBar: AppBar(
-        //   leading: IconButton(
-        //     onPressed: () {
-        //       Navigator.pop(context);
-        //     },
-        //     icon: Icon(
-        //       Icons.arrow_back,
-        //       color: ColorConstant.whiteColor,
-        //     ),
-        //   ),
-        // ),
-        body: Stack(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height * 1.00,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              // .copyWith(bottom: 20),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                ColorConstant.buttonColor2,
-                ColorConstant.buttonColor,
-              ])),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              height: 36,
-                              width: 36,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: ColorConstant.greyColor),
-                                  gradient: LinearGradient(colors: [
-                                    ColorConstant.buttonColor2,
-                                    ColorConstant.buttonColor,
-                                  ])),
-                              child: Image.asset('assets/images/back.png'),
-                            ),
-                          ),
-                          MyText(
-                            myText: 'hello',
-                            // myText: widget.coloringImage.imageName,
-                            fontweight: FontWeight.w500,
-                            textColor: ColorConstant.whiteColor,
-                            fontSize: MediaQuery.of(context).size.width < 361
-                                ? 18.0
-                                : 22.0,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                  barrierDismissible: false,
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      content: Text(
-                                        'Art add to Contest !',
-                                        style: GoogleFonts.lato(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          color: ColorConstant.blackColor,
-                                          letterSpacing: 0.8,
-                                        ),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            'Cancel',
-                                            style: GoogleFonts.lato(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w400,
-                                              color: ColorConstant.blackColor,
-                                              letterSpacing: 0.8,
-                                            ),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            addArtToContest();
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade300,
-                                                    content: Text(
-                                                      message,
-                                                      style: GoogleFonts.lato(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color: Colors.white,
-                                                      ),
-                                                    )));
-
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            'Add',
-                                            style: GoogleFonts.lato(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w400,
-                                              color: ColorConstant.blackColor,
-                                              letterSpacing: 0.8,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  });
-                            },
-                            child: Image.asset(
-                              'assets/images/contest.jpg',
-                              height: 40,
-                              width: 40,
-                            ),
-                          ),
-                        ],
+        body: Container(
+          height: MediaQuery.of(context).size.height * 1.00,
+          width: double.infinity,
+          decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [
+            ColorConstant.buttonColor2,
+            ColorConstant.buttonColor,
+          ])),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20)
+                    .copyWith(top: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        height: 36,
+                        width: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: ColorConstant.greyColor),
+                            gradient: LinearGradient(colors: [
+                              ColorConstant.buttonColor2,
+                              ColorConstant.buttonColor,
+                            ])),
+                        child: Image.asset('assets/images/back.png'),
                       ),
-                    ],
-                  ),
-
-                  //
-                  Container(
-                    height: 170,
-                    width: double.infinity,
-                    color: Colors.transparent,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          alignment: Alignment.center,
-                          height: 40,
-                          width: MediaQuery.of(context).size.width * 0.86,
-                          decoration: BoxDecoration(
-                            color: ColorConstant.blackColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: MyText(
-                            myText: 'Pick a color from the palette to start',
-                            fontweight: FontWeight.w400,
-                            textColor: ColorConstant.whiteColor,
-                            fontSize: 14.0,
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              for (var i = 0; i < colors.length; i++)
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child: circleWidget(colors[i]),
-                                ),
-                            ],
-                          ),
-                        ),
-                        isAdLoaded
-                            ? SizedBox(
-                                height: bannerAd.size.height.toDouble(),
-                                width: bannerAd.size.width.toDouble(),
-                                child: AdWidget(ad: bannerAd),
-                              )
-                            : const SizedBox(),
-                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              height: MediaQuery.of(context).size.height * 0.80,
-              width: double.infinity,
-              color: Colors.transparent,
-              child: Center(
-                child: Container(
-                  height: 400,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: ColorConstant.buttonColor2,
-                  ),
-                  child: WorldMap(),
+                    MyText(
+                      myText: 'hello',
+                      // myText: widget.coloringImage.imageName,
+                      fontweight: FontWeight.w500,
+                      textColor: ColorConstant.whiteColor,
+                      fontSize:
+                          MediaQuery.of(context).size.width < 361 ? 18.0 : 22.0,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Text(
+                                  'Art add to Contest !',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w400,
+                                    color: ColorConstant.blackColor,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      'Cancel',
+                                      style: GoogleFonts.lato(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        color: ColorConstant.blackColor,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      addArtToContest();
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              backgroundColor:
+                                                  Colors.blue.shade300,
+                                              content: Text(
+                                                message,
+                                                style: GoogleFonts.lato(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Colors.white,
+                                                ),
+                                              )));
+
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      'Add',
+                                      style: GoogleFonts.lato(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        color: ColorConstant.blackColor,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            });
+                      },
+                      child: Image.asset(
+                        'assets/images/contest.jpg',
+                        height: 40,
+                        width: 40,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            // Positioned(
-            //   bottom: 0,
-            //   child: SingleChildScrollView(
-            //     scrollDirection: Axis.horizontal,
-            //     physics: const BouncingScrollPhysics(),
-            //     child: Container(
-            //       color: Colors.yellow.shade100,
-            //       child: Row(
-            //         children: [
-            //           for (var i = 0; i < colors.length; i++)
-            //             Padding(
-            //               padding: const EdgeInsets.only(right: 6),
-            //               child: circleWidget(colors[i]),
-            //             ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
+              // image
+              Container(
+                height: MediaQuery.of(context).size.height * 0.50,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: ColorConstant.buttonColor2,
+                ),
+                child: InteractiveViewer(
+                  child: WorldMap(),
+                  maxScale: 6.5,
+                ),
+              ),
 
-            // ),
-          ],
+              //
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20)
+                    .copyWith(bottom: 20),
+                height: 140,
+                width: double.infinity,
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      height: 40,
+                      width: MediaQuery.of(context).size.width * 0.86,
+                      decoration: BoxDecoration(
+                        color: ColorConstant.blackColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: MyText(
+                        myText: 'Pick a color from the palette to start',
+                        fontweight: FontWeight.w400,
+                        textColor: ColorConstant.whiteColor,
+                        fontSize: 14.0,
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (var i = 0;
+                              i < colorChangeProvider.colors.length;
+                              i++)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child:
+                                  circleWidget(colorChangeProvider.colors[i]),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // isAdLoaded
+                    //     ? SizedBox(
+                    //         height: bannerAd.size.height.toDouble(),
+                    //         width: bannerAd.size.width.toDouble(),
+                    //         child: AdWidget(ad: bannerAd),
+                    //       )
+                    //     : const SizedBox(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -426,24 +365,28 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
     return GestureDetector(
       onTap: () {
         // setState(() {
+
         WorldMap.pickerColor = mycolor;
+        colorChangeProvider.colorsChange(mycolor);
         // selectedColor = mycolor;
         // });
       },
-      child: Container(
-        alignment: Alignment.center,
-        height: selectedColor == mycolor ? 60 : 45,
-        width: selectedColor == mycolor ? 60 : 45,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: mycolor,
-        ),
-        child: Icon(
-          Icons.check,
-          size: 36,
-          color: selectedColor == mycolor
-              ? ColorConstant.greyColor
-              : Colors.transparent,
+      child: Consumer<ResetPasswordProvider>(
+        builder: (context, value, child) => Container(
+          alignment: Alignment.center,
+          height: value.selectedColor == mycolor ? 60 : 45,
+          width: value.selectedColor == mycolor ? 60 : 45,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: mycolor,
+          ),
+          child: Icon(
+            Icons.check,
+            size: 36,
+            color: value.selectedColor == mycolor
+                ? ColorConstant.greyColor
+                : Colors.transparent,
+          ),
         ),
       ),
     );

@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:colorvelvetus/Screens/ContestPage.dart';
 import 'package:colorvelvetus/Screens/Home.dart';
 import 'package:colorvelvetus/Screens/UserProfile.dart';
-import 'package:colorvelvetus/Screens/News.dart';
+import 'package:colorvelvetus/Screens/MyArt.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:colorvelvetus/Widgets/MyText.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      currentScreen = const News();
+                      currentScreen = const MyArt();
                       _bottomNavIndex = 3;
                     });
                   },
