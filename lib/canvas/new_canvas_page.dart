@@ -27,7 +27,7 @@ class NewCanvasPage extends StatefulWidget {
 
 class _NewCanvasPageState extends State<NewCanvasPage> {
   GlobalKey previewContainer = GlobalKey();
-  late BannerAd bannerAd;
+  
   bool isAdLoaded = false;
   String userID = '';
   String contestID = '';
@@ -90,6 +90,7 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
   }
 
   // Google Ads
+  late BannerAd bannerAd;
   initBannerAdd() {
     bannerAd = BannerAd(
       size: AdSize.banner,
@@ -147,12 +148,14 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String myToken = prefs.getString('getaccesToken').toString();
     String apiUrl = "https://cv.glamouride.org/api/add-to-contest";
+    print('id' + widget.coloringImage.artID);
 
     Map<String, dynamic> data = {
       'user_id': userID.toString(),
       'art_id': widget.coloringImage.artID.toString(),
       'contest_id': contestID.toString(),
     };
+    print(data);
 
     // Convert the map to a JSON string
     String body = jsonEncode(data);
@@ -201,6 +204,7 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return RepaintBoundary(
       key: previewContainer,
       child: SafeArea(
@@ -210,8 +214,8 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
               Container(
                 height: MediaQuery.of(context).size.height * 1.00,
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20)
-                    .copyWith(bottom: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                // .copyWith(bottom: 20),
                 decoration: BoxDecoration(
                     gradient: LinearGradient(colors: [
                   ColorConstant.buttonColor2,
@@ -222,15 +226,10 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                   children: [
                     Column(
                       children: [
-                        isAdLoaded
-                            ? SizedBox(
-                                height: bannerAd.size.height.toDouble(),
-                                width: bannerAd.size.width.toDouble(),
-                                child: AdWidget(ad: bannerAd),
-                              )
-                            : const SizedBox(),
+                        const SizedBox(height: 20),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             GestureDetector(
                               onTap: () {
@@ -251,26 +250,35 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                                 child: Image.asset('assets/images/back.png'),
                               ),
                             ),
-                            const Spacer(),
                             MyText(
                               myText: widget.coloringImage.imageName,
                               fontweight: FontWeight.w500,
                               textColor: ColorConstant.whiteColor,
-                              fontSize: 24.0,
+                              fontSize: width < 361 ? 18.0 : 22.0,
                             ),
-                            const Spacer(),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    showDialog(
-                                        barrierDismissible: false,
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            content: Text(
-                                              'Art add to Contest !',
+                            GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                    barrierDismissible: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                          'Art add to Contest !',
+                                          style: GoogleFonts.lato(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w400,
+                                            color: ColorConstant.blackColor,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text(
+                                              'Cancel',
                                               style: GoogleFonts.lato(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w400,
@@ -278,79 +286,45 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                                                 letterSpacing: 0.8,
                                               ),
                                             ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text(
-                                                  'Cancel',
-                                                  style: GoogleFonts.lato(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: ColorConstant
-                                                        .blackColor,
-                                                    letterSpacing: 0.8,
-                                                  ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  await addArtToContest();
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(SnackBar(
-                                                          backgroundColor:
-                                                              Colors.blue
-                                                                  .shade300,
-                                                          content: Text(
-                                                            message,
-                                                            style: GoogleFonts
-                                                                .lato(
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          )));
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              addArtToContest();
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      backgroundColor:
+                                                          Colors.blue.shade300,
+                                                      content: Text(
+                                                        message,
+                                                        style: GoogleFonts.lato(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          color: Colors.white,
+                                                        ),
+                                                      )));
 
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text(
-                                                  'Add',
-                                                  style: GoogleFonts.lato(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: ColorConstant
-                                                        .blackColor,
-                                                    letterSpacing: 0.8,
-                                                  ),
-                                                ),
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text(
+                                              'Add',
+                                              style: GoogleFonts.lato(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                                color: ColorConstant.blackColor,
+                                                letterSpacing: 0.8,
                                               ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(
-                                    Icons.share_outlined,
-                                    color: ColorConstant.whiteColor,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      points.clear();
+                                            ),
+                                          ),
+                                        ],
+                                      );
                                     });
-                                  },
-                                  child: MyText(
-                                    myText: 'Clear',
-                                    fontweight: FontWeight.w500,
-                                    textColor: ColorConstant.whiteColor,
-                                    fontSize: 20.0,
-                                  ),
-                                ),
-                              ],
+                              },
+                              child: Image.asset(
+                                'assets/images/contest.jpg',
+                                height: 40,
+                                width: 40,
+                              ),
                             ),
                           ],
                         ),
@@ -359,7 +333,7 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
 
                     //
                     Container(
-                      height: 108,
+                      height: 170,
                       width: double.infinity,
                       color: Colors.transparent,
                       child: Column(
@@ -368,7 +342,7 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                           Container(
                             alignment: Alignment.center,
                             height: 40,
-                            width: MediaQuery.of(context).size.width * 0.80,
+                            width: MediaQuery.of(context).size.width * 0.86,
                             decoration: BoxDecoration(
                               color: ColorConstant.blackColor,
                               borderRadius: BorderRadius.circular(8),
@@ -392,6 +366,13 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                               ],
                             ),
                           ),
+                          isAdLoaded
+                              ? SizedBox(
+                                  height: bannerAd.size.height.toDouble(),
+                                  width: bannerAd.size.width.toDouble(),
+                                  child: AdWidget(ad: bannerAd),
+                                )
+                              : const SizedBox(),
                         ],
                       ),
                     ),
@@ -433,14 +414,17 @@ class _NewCanvasPageState extends State<NewCanvasPage> {
                 },
                 child: Stack(
                   children: [
-                    Center(
-                      child: SizedBox(
-                          height: 400,
-                          width: double.infinity,
-                          child: Image.network(
-                            widget.coloringImage.imageAssetPath,
-                            fit: BoxFit.contain,
-                          )),
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.80,
+                      child: Center(
+                        child: SizedBox(
+                            height: 400,
+                            width: double.infinity,
+                            child: Image.network(
+                              widget.coloringImage.imageAssetPath,
+                              fit: BoxFit.contain,
+                            )),
+                      ),
                     ),
                     Visibility(
                       visible: true,

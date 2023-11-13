@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:colorvelvetus/Screens/SignUpView.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -285,7 +286,7 @@ class _UserProfileState extends State<UserProfile> {
                       children: [
                         Container(
                             padding: const EdgeInsets.symmetric(vertical: 24),
-                            height: 220,
+                            height: 170,
                             width: double.infinity,
                             decoration: BoxDecoration(
                                 gradient: LinearGradient(colors: [
@@ -312,9 +313,9 @@ class _UserProfileState extends State<UserProfile> {
                             },
                             child: Container(
                               margin: EdgeInsets.only(
-                                right: MediaQuery.of(context).size.width * 0.28,
+                                right: MediaQuery.of(context).size.width * 0.32,
                                 bottom:
-                                    MediaQuery.of(context).size.height * 0.04,
+                                    MediaQuery.of(context).size.height * 0.03,
                               ),
                               height: 36,
                               width: 36,
@@ -339,151 +340,141 @@ class _UserProfileState extends State<UserProfile> {
                         itemCount:
                             userData['phone'] == null ? 3 : seqData.length,
                         itemBuilder: (context, index) {
-                          return GestureDetector(
+                          return ListTile(
+                            style: ListTileStyle.drawer,
                             onTap: () {},
-                            child: index == 0
-                                ? Text('')
-                                : Container(
-                                    height: 80,
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 0),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            seqData[index]['icon'],
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            MyText(
-                                              myText: seqData[index]
-                                                  [seq[index]],
-                                              fontweight: FontWeight.w500,
-                                              textColor: ColorConstant
-                                                  .blackColor
-                                                  .withOpacity(0.90),
-                                              fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width <
-                                                      361
-                                                  ? 15.0
-                                                  : 18.0,
-                                            ),
-                                          ],
-                                        ),
-                                        IconButton(
-                                            onPressed: () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  update.text = seqData[index]
-                                                      [seq[index]];
-                                                  return AlertDialog(
-                                                    // backgroundColor: Colors.transparent,
-                                                    content: index == 3
-                                                        ? Container(
-                                                            height: 180,
-                                                            width:
-                                                                double.infinity,
-                                                            color: ColorConstant
-                                                                .whiteColor,
-                                                            child: Column(
-                                                              children: [
-                                                                TextFieldWidget(
-                                                                  title:
-                                                                      'Phone',
-                                                                  color: ColorConstant
-                                                                      .buttonColor2,
-                                                                  hintText:
-                                                                      'Update field',
-                                                                  controller:
-                                                                      update,
-                                                                  isObscure:
-                                                                      false,
-                                                                ),
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .end,
-                                                                  children: [
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        setState(
-                                                                            () {
-                                                                          isLoading =
-                                                                              false;
-                                                                        });
-                                                                        Navigator.pop(
-                                                                            context);
-                                                                      },
-                                                                      child:
-                                                                          MyText(
-                                                                        myText:
-                                                                            'Cancel',
-                                                                        fontweight:
-                                                                            FontWeight.w400,
-                                                                        textColor:
-                                                                            ColorConstant.blackColor,
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                    ),
-                                                                    isLoading
-                                                                        ? StatefulBuilder(
-                                                                            builder:
-                                                                                (context, setState) {
-                                                                              return LottieBuilder.asset(
-                                                                                'assets/lottie/loading.json',
-                                                                                height: 40,
-                                                                                width: 60,
-                                                                              );
-                                                                            },
-                                                                          )
-                                                                        : TextButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              updateInfo();
-                                                                            },
-                                                                            child:
-                                                                                MyText(
-                                                                              myText: 'Update',
-                                                                              fontweight: FontWeight.w400,
-                                                                              textColor: ColorConstant.buttonColor2,
-                                                                              fontSize: 16.0,
-                                                                            ),
-                                                                          ),
-                                                                  ],
-                                                                ),
-                                                              ],
+                            isThreeLine: false,
+                            leading: index == 0
+                                ? const SizedBox()
+                                : seqData[index]['icon'],
+                            title: index == 0
+                                ? const SizedBox()
+                                : Text(
+                                    '${seqData[index][seq[index]]}'
+                                        .toUpperCase(),
+                                    maxLines: 1,
+                                    style: GoogleFonts.lato(
+                                      fontWeight: FontWeight.w500,
+                                      color: ColorConstant.blackColor
+                                          .withOpacity(0.90),
+                                      fontSize:
+                                          MediaQuery.of(context).size.width <
+                                                  361
+                                              ? 14.0
+                                              : 20.0,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                            trailing: index == 0
+                                ? const SizedBox()
+                                : IconButton(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          update.text =
+                                              seqData[index][seq[index]];
+                                          return AlertDialog(
+                                            // backgroundColor: Colors.transparent,
+                                            content: index == 3
+                                                ? Container(
+                                                    height: 180,
+                                                    width: double.infinity,
+                                                    color: ColorConstant
+                                                        .whiteColor,
+                                                    child: Column(
+                                                      children: [
+                                                        TextFieldWidget(
+                                                          title: 'Phone',
+                                                          color: ColorConstant
+                                                              .buttonColor2,
+                                                          hintText:
+                                                              'Update field',
+                                                          controller: update,
+                                                          isObscure: false,
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  isLoading =
+                                                                      false;
+                                                                });
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: MyText(
+                                                                myText:
+                                                                    'Cancel',
+                                                                fontweight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                textColor:
+                                                                    ColorConstant
+                                                                        .blackColor,
+                                                                fontSize: 16.0,
+                                                              ),
                                                             ),
-                                                          )
-                                                        : MyText(
-                                                            myText:
-                                                                "This value Can't Change",
-                                                            fontweight:
-                                                                FontWeight.w400,
-                                                            textColor:
-                                                                ColorConstant
-                                                                    .buttonColor2,
-                                                            fontSize: 16.0,
-                                                          ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            icon: Icon(
-                                              Icons.edit,
-                                              color: index == 3
-                                                  ? Colors.blue.shade800
-                                                  : ColorConstant.buttonColor2,
-                                            ))
-                                      ],
+                                                            isLoading
+                                                                ? StatefulBuilder(
+                                                                    builder:
+                                                                        (context,
+                                                                            setState) {
+                                                                      return LottieBuilder
+                                                                          .asset(
+                                                                        'assets/lottie/loading.json',
+                                                                        height:
+                                                                            40,
+                                                                        width:
+                                                                            60,
+                                                                      );
+                                                                    },
+                                                                  )
+                                                                : TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      updateInfo();
+                                                                    },
+                                                                    child:
+                                                                        MyText(
+                                                                      myText:
+                                                                          'Update',
+                                                                      fontweight:
+                                                                          FontWeight
+                                                                              .w400,
+                                                                      textColor:
+                                                                          ColorConstant
+                                                                              .buttonColor2,
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                                  ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : MyText(
+                                                    myText:
+                                                        "This value Can't Change",
+                                                    fontweight: FontWeight.w400,
+                                                    textColor: ColorConstant
+                                                        .buttonColor2,
+                                                    fontSize: 16.0,
+                                                  ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.edit,
+                                      color: index == 3
+                                          ? Colors.blue.shade800
+                                          : ColorConstant.buttonColor2,
                                     ),
                                   ),
                           );

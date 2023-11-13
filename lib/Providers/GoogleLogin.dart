@@ -5,7 +5,6 @@ import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:colorvelvetus/Screens/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,9 +34,9 @@ class GoogleServices {
 
     await FirebaseAuth.instance.signInWithCredential(credential);
     await socialLogin(
-          context,
-          gUser,
-        );
+      context,
+      gUser,
+    );
   }
 
   // social login
@@ -46,6 +45,7 @@ class GoogleServices {
     GoogleSignInAccount googleUser,
   ) async {
     isLoading = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     final url =
         Uri.parse('https://cv.glamouride.org/api/authorized/google/callback');
 
@@ -63,6 +63,8 @@ class GoogleServices {
 
     var responseData = jsonDecode(response.body);
     print("success:>>> ${responseData['message']}");
+    var sub_message = responseData['sub_message'];
+    await prefs.setString('sub_message', sub_message);
     print(googleUser.displayName);
     print(googleUser.email);
 

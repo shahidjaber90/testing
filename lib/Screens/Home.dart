@@ -1,13 +1,17 @@
 import 'dart:convert';
-import 'package:colorvelvetus/canvas/coloring_image.dart';
-import 'package:colorvelvetus/canvas/new_canvas_page.dart';
+import 'package:colorvelvetus/Providers/LogoutProvider.dart';
+import 'package:colorvelvetus/Screens/PaintingWork/Painting_root.dart';
+import 'package:colorvelvetus/Screens/Payment_Plans/ChooseYourPlan.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:colorvelvetus/LocalData/LocalData.dart';
-import 'package:colorvelvetus/Screens/SettingsPages/SettingsView.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:colorvelvetus/Widgets/MyText.dart';
 
@@ -41,6 +45,26 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     ),
   ];
   int activeIndex = 0;
+
+  // upload image
+  Future<void> uploadNetworkImage(String imageUrl) async {
+  try {
+    Dio dio = Dio();
+    FormData formData = FormData.fromMap({
+      'email':
+      'image': imageUrl,
+    });
+
+    Response response = await dio.post(
+      'https://cv.glamouride.org/api/upload-art',
+      data: formData,
+    );
+
+    print('Upload response: ${response.data}');
+  } catch (error) {
+    print('Error uploading image: $error');
+  }
+}
 
   //
 
@@ -123,7 +147,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               children: [
                 // App Bar
                 Container(
-                  height: 250,
+                  height: MediaQuery.of(context).size.height * 0.25,
                   width: double.infinity,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -145,29 +169,61 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 10),
-                            child: MyText(
-                              myText: 'Home',
-                              textColor: ColorConstant.whiteColor,
-                              fontSize: 28.0,
-                              fontweight: FontWeight.w700,
+                            child: Text(
+                              'Home',
+                              style: GoogleFonts.eduTasBeginner(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          Row(
                             children: [
                               GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SettingsView(),
-                                      ),
-                                    );
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ChooseYourPlan(),
+                                    ),
+                                  );
+                                },
+                                child: Image.asset(
+                                  'assets/images/payment.png',
+                                  height: 40,
+                                  width: 40,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              // second
+                              GestureDetector(
+                                  onTap: () async {
+                                    LogOutProvider logoutProvider =
+                                        LogOutProvider();
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    // ignore: use_build_context_synchronously
+                                    await logoutProvider
+                                        .logoutFunction(context)
+                                        .then((value) =>
+                                            prefs.remove('getaccesToken'));
+                                    final GoogleSignIn googleSignIn =
+                                        GoogleSignIn();
+                                    await googleSignIn.signOut();
+                                    await FirebaseAuth.instance.signOut();
+                                    print('logout successfully');
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) =>
+                                    //         const SettingsView(),
+                                    //   ),
+                                    // );
                                   },
                                   child: Icon(
-                                    Icons.settings,
-                                    color: ColorConstant.whiteColor,
+                                    Icons.logout_outlined,
+                                    color: ColorConstant.blackColor,
                                     size: 30,
                                   )),
                             ],
@@ -177,14 +233,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
                       // Carousel Slider
                       SizedBox(
-                        height: 180,
+                        height: MediaQuery.of(context).size.height * 0.18,
                         width: double.infinity,
                         child: Column(
                           children: [
                             CarouselSlider(
                               options: CarouselOptions(
                                 autoPlay: true,
-                                height: 160,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.16,
                                 autoPlayCurve: Curves.fastOutSlowIn,
                                 autoPlayAnimationDuration:
                                     const Duration(milliseconds: 700),
@@ -307,9 +364,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   ),
                 ),
                 //
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  height: MediaQuery.of(context).size.height * 0.47,
+                Expanded(
                   child: FutureBuilder<List<dynamic>>(
                     future: getArt(),
                     builder: (BuildContext context,
@@ -320,9 +375,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         List<dynamic> data = snapshot.data ?? [];
                         final Swidth = MediaQuery.of(context).size.width;
                         return GridView.builder(
-                          shrinkWrap: true,
                           physics: const BouncingScrollPhysics(),
-                          scrollDirection: Axis.vertical,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
                             childAspectRatio: (550 / Swidth * 0.40),
@@ -338,16 +391,25 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => NewCanvasPage(
-                                      coloringImage: ColoringImage(
-                                        data[index]['name'],
-                                        data[index]['image'],
-                                        data[index]['id'].toString(),
-                                      ),
-                                      // textImage:
-                                    ),
+                                    builder: (context) =>
+                                         PaintingRootPage(
+                                          artID: data[index]['id'].toString(),
+                                        ),
                                   ),
                                 );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (context) => NewCanvasPage(
+                                //       coloringImage: ColoringImage(
+                                //         data[index]['name'],
+                                //         data[index]['image'],
+                                //         data[index]['id'].toString(),
+                                //       ),
+                                //       // textImage:
+                                //     ),
+                                //   ),
+                                // );
                               },
                               child: Container(
                                 alignment: Alignment.center,

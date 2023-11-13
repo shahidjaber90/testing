@@ -28,7 +28,7 @@ class _PaymentState extends State<Payment> {
       if (paymentIntentData != null) {
         await Stripe.instance.initPaymentSheet(
             paymentSheetParameters: SetupPaymentSheetParameters(
-          googlePay: PaymentSheetGooglePay(merchantCountryCode: 'USD'),
+          // googlePay: PaymentSheetGooglePay(merchantCountryCode: 'USD'),
           merchantDisplayName: 'Shahid Jaber',
           customerId: paymentIntentData!['Customer'],
           paymentIntentClientSecret: paymentIntentData!['client_secret'],
@@ -55,7 +55,7 @@ class _PaymentState extends State<Payment> {
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         body: body,
         headers: {
-          'Autherization':
+          'Autho  rization':
               'Bearer sk_test_51Nze4zBoWpCWkiM4ttwtFS1ce5s0q7qw5MkTInYkeuJ7QbtHzL1Xoim0zxbAmmP6ijXaOVY6gk32yrJIzXMhegBX000lhFtsxI',
           'Content-Type': 'application/x-www-form-urlencoded',
         },

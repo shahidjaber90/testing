@@ -21,6 +21,7 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
   String customer_subscription_secret = '';
   String subscription_id = '';
   bool isLoading = false;
+  String payment = '';
 
   List<Map<String, dynamic>> data = [];
   Future<List<dynamic>> getSubscription() async {
@@ -79,8 +80,8 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
         final jsonData = jsonDecode(response.body);
         setState(() {
           customer_subscription_secret =
-              jsonData['customer_subscription_secret'];
-          subscription_id = jsonData['subscription_id'];
+              jsonData['customer_subscription_secret'].toString();
+          print(customer_subscription_secret);
         });
         return jsonData['data'];
       } else {
@@ -93,116 +94,70 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
   }
 
   // payment stripe
-  Map<String, dynamic>? paymentIntent;
-
+  Map<String, dynamic>? paymentIntentData;
   Future<void> makePayment() async {
     try {
-      //STEP 1: Create Payment Intent
-      print('1');
-      paymentIntent = await createPaymentIntent('100', 'USD');
-      print('11');
-
-      print('2');
-      //STEP 2: Initialize Payment Sheet
+      paymentIntentData = await createPaymentIntent('15', 'USD');
       await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret:
-                paymentIntent![customer_subscription_secret],
-            customerId: paymentIntent![subscription_id],
-            style: ThemeMode.dark,
-            googlePay: const PaymentSheetGooglePay(
-              merchantCountryCode: 'USD',
-              testEnv: true,
-            ),
-            merchantDisplayName: 'Shahid'),
-      );
-
-      //STEP 3: Display Payment sheet
-      print('3');
+          paymentSheetParameters: SetupPaymentSheetParameters(
+        // paymentIntentClientSecret:
+        //     paymentIntentData![customer_subscription_secret].toString(),
+        paymentIntentClientSecret: paymentIntentData!['client_secret'],
+        setupIntentClientSecret: customer_subscription_secret,
+        googlePay: const PaymentSheetGooglePay(
+          merchantCountryCode: 'US',
+          testEnv: true,
+        ),
+        style: ThemeMode.dark,
+        merchantDisplayName: 'Shahid',
+      ));
       displayPaymentSheet();
-      print('4');
-    } catch (err) {
-      print('error: $err');
+    } catch (e) {
+      print('Exception: ${e.toString()}');
     }
   }
 
-  // calculate amount
   calculateAmount(String amount) {
-    final a = (int.parse(amount)) * 100;
-    return a.toString();
+    final price = int.parse(amount) * 100;
+    return price.toString();
   }
 
-  // create payment
   createPaymentIntent(String amount, String currency) async {
     try {
-      //Request body
       Map<String, dynamic> body = {
         'amount': calculateAmount(amount),
         'currency': currency,
+        'payment_method_types[]': 'card',
       };
-
-      //Make post request to Stripe
       var response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        body: body,
         headers: {
           'Authorization':
               'Bearer sk_test_51Nze4zBoWpCWkiM4ttwtFS1ce5s0q7qw5MkTInYkeuJ7QbtHzL1Xoim0zxbAmmP6ijXaOVY6gk32yrJIzXMhegBX000lhFtsxI',
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: body,
       );
-      return json.decode(response.body);
-    } catch (err) {
-      print('Error is:--->err $err');
-      throw Exception(err.toString());
+      return jsonDecode(response.body.toString());
+    } catch (e) {
+      print('Exception: ${e.toString()}');
     }
   }
 
-  // display payment sheet
   displayPaymentSheet() async {
     try {
-      await Stripe.instance.presentPaymentSheet().then((value) {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 100.0,
-                      ),
-                      SizedBox(height: 10.0),
-                      Text("Payment Successful!"),
-                    ],
-                  ),
-                ));
-
-        paymentIntent = null;
-      }).onError((error, stackTrace) {
-        throw Exception(error);
+      await Stripe.instance.presentPaymentSheet();
+      setState(() {
+        paymentIntentData = null;
       });
-    } on StripeException catch (e) {
-      print('Error is:---> $e');
-      AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: const [
-                Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                ),
-                Text("Payment Failed"),
-              ],
-            ),
-          ],
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment Successfully'),
         ),
       );
-    } catch (e) {
-      print('$e');
+    } on StripeException catch (e) {
+      print('Exception ' + e.toString());
+      print('Payment fail');
     }
   }
 
@@ -252,7 +207,7 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
           SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-              height: MediaQuery.of(context).size.height * 1.00,
+              height: MediaQuery.of(context).size.height * 0.75,
               width: MediaQuery.of(context).size.width * 1.00,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,6 +318,8 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
                                       setState(() {
                                         currentIndex = index;
                                         prizeID = data[index]['price_id'];
+                                        payment =
+                                            data[index]['amount'].toString();
                                         print(data[index]['name']);
                                         print(data[index]['amount']);
                                         print(data[index]['currency']);
@@ -397,7 +354,8 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
                                             ),
                                           ),
                                           Text(
-                                            ' (${data[index]["currency"]} currency)',
+                                            ' (${data[index]["currency"]})'
+                                                .toUpperCase(),
                                             style: GoogleFonts.inter(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w400,
@@ -420,16 +378,26 @@ class _ChooseYourPlanState extends State<ChooseYourPlan> {
                             ),
                           ),
                         ),
-                  ButtonWidget(
-                    buttonText: 'Next',
-                    gradient: LinearGradient(colors: [
-                      ColorConstant.buttonColor2,
-                      ColorConstant.buttonColor,
-                    ]),
-                    onTap: () {
-                      makePayment();
-                    },
-                  ),
+                  isLoading
+                      ? const SizedBox()
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.50,
+                              child: ButtonWidget(
+                                buttonText: 'Click to Payment',
+                                gradient: LinearGradient(colors: [
+                                  ColorConstant.buttonColor2,
+                                  ColorConstant.buttonColor,
+                                ]),
+                                onTap: () async {
+                                  await makePayment();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                   const SizedBox(
                     height: 16,
                   ),

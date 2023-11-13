@@ -53,10 +53,13 @@ dependencies:
   firebase_auth: ^4.11.0
   google_sign_in: ^6.1.5
   animated_floating_buttons: ^0.0.2
+  svg_path_parser: ^1.1.1
+  touchable: ^1.0.2
   flutter_colorpicker: ^1.0.3
   pinch_zoom: ^2.0.0
   flutter_stripe: ^9.5.0+1
   google_mobile_ads: ^3.1.0
+  dio: ^5.3.3
 
 flutter_launcher_icons:
   android: true

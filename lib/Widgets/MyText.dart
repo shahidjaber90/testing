@@ -9,6 +9,7 @@ class MyText extends StatelessWidget {
   Color textColor;
   final letterSpacing;
   final textAlign;
+  final maxLine;
   MyText({
     super.key,
     required this.myText,
@@ -17,12 +18,14 @@ class MyText extends StatelessWidget {
     required this.textColor,
     this.letterSpacing,
     this.textAlign,
+    this.maxLine,
   });
 
   @override
   Widget build(BuildContext context) {
     return Text(
       myText,
+      maxLines: maxLine,
       textAlign: textAlign,
       style: GoogleFonts.poppins(
         fontSize: fontSize,

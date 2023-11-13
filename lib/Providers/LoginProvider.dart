@@ -48,7 +48,9 @@ class LoginProvider with ChangeNotifier {
       print('Hello Shahid $message and ${responseData["access_token"]}');
       if (response.statusCode == 200) {
         var accessToken = responseData['access_token'];
+        var sub_message = responseData['sub_message'];
         await prefs.setString('getaccesToken', accessToken);
+        await prefs.setString('sub_message', sub_message);  
         // ignore: avoid_print
         print(accessToken);
         ScaffoldMessenger.of(context).showSnackBar(

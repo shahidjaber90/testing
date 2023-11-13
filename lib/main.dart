@@ -22,9 +22,6 @@ void main() async {
   MobileAds.instance.updateRequestConfiguration(requestConfiguration);
   Stripe.publishableKey =
       "pk_test_51Nze4zBoWpCWkiM4z8tQcjzbJ2Xc6Thg0Kkz3cd0QLYXWF0KO2zlY8beV42cr7bbLsHXZ29mevM4WtIVcRKTjpKq00BXzCVnFa";
-  Stripe.merchantIdentifier = 'merchant.flutter.stripe.test';
-  Stripe.urlScheme = 'flutterstripe';
-  await Stripe.instance.applySettings();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
