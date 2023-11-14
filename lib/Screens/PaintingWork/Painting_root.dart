@@ -12,10 +12,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PaintingRootPage extends StatefulWidget {
-  String artID;
+  Map mArt;
+
   PaintingRootPage({
     super.key,
-    required this.artID,
+    required this.mArt,
   });
 
   @override
@@ -118,7 +119,7 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
 
     Map<String, dynamic> data = {
       'user_id': userID.toString(),
-      'art_id': widget.artID.toString(),
+      'art_id': widget.mArt["id"].toString(),
       'contest_id': contestID.toString(),
     };
     print(data);
@@ -210,7 +211,7 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
                       ),
                     ),
                     MyText(
-                      myText: 'hello',
+                      myText: widget.mArt["name"],
                       // myText: widget.coloringImage.imageName,
                       fontweight: FontWeight.w500,
                       textColor: ColorConstant.whiteColor,
@@ -292,13 +293,13 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
 
               // image
               Container(
-                height: MediaQuery.of(context).size.height * 0.50,
+                height: MediaQuery.of(context).size.height * 0.70,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: ColorConstant.buttonColor2,
                 ),
                 child: InteractiveViewer(
-                  child: WorldMap(),
+                  child: WorldMap(widget.mArt),
                   maxScale: 6.5,
                 ),
               ),

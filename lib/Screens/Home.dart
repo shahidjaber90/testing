@@ -520,7 +520,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PaintingRootPage(
-                                      artID: data[index]['id'].toString(),
+                                      mArt: data[index],
                                     ),
                                   ),
                                 );
