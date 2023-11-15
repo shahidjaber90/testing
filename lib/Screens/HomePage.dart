@@ -1,3 +1,5 @@
+import 'package:colorvelvetus/Screens/ContestPages/AllContest.dart';
+import 'package:colorvelvetus/Screens/Daily.dart';
 import 'package:colorvelvetus/Screens/OpeningView.dart';
 import 'package:colorvelvetus/Screens/Payment_Plans/ChooseYourPlan.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var _bottomNavIndex = 0;
+  var _bottomNavIndex = 5;
   final PageStorageBucket bucket = PageStorageBucket();
   Widget currentScreen = const Home();
 
@@ -27,19 +29,51 @@ class _HomePageState extends State<HomePage> {
     return SafeArea(
       child: Scaffold(
         body: PageStorage(bucket: bucket, child: currentScreen),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.transparent,
+          isExtended: true,
+          elevation: 2.0,
+          onPressed: () {
+            setState(() {
+              currentScreen = const Home();
+              _bottomNavIndex = 5;
+            });
+          },
+          child: Container(
+            height: 50,
+            width: 50,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: ColorConstant.buttonColor2,
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  ColorConstant.buttonColor2,
+                  ColorConstant.buttonColor,
+                ],
+              ),
+            ),
+            child: SvgPicture.asset(
+              'assets/svg/House.svg',
+              height: 20,
+              width: 20,
+              color: _bottomNavIndex == 5
+                  ? ColorConstant.whiteColor
+                  : ColorConstant.greyColor.withOpacity(0.60),
+            ),
+          ),
+        ),
         bottomNavigationBar: BottomAppBar(
           shape: const CircularNotchedRectangle(),
-          notchMargin: 5,
+          notchMargin: 5.0,
           child: Container(
             alignment: Alignment.center,
             padding:
-                const EdgeInsets.symmetric(horizontal: 18).copyWith(top: 10),
+                const EdgeInsets.symmetric(horizontal: 10).copyWith(top: 10),
             decoration: BoxDecoration(
-                // borderRadius: BorderRadius.circular(48),
-                gradient: LinearGradient(colors: [
-              ColorConstant.buttonColor2.withOpacity(0.75),
-              ColorConstant.buttonColor.withOpacity(0.75),
-            ])),
+              color: ColorConstant.whiteColor,
+            ),
             height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -47,35 +81,35 @@ class _HomePageState extends State<HomePage> {
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      currentScreen = const Home();
+                      currentScreen = DailyPage();
                       _bottomNavIndex = 0;
                     });
                   },
                   // minWidth: 40,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _bottomNavIndex == 0
-                          ? SvgPicture.asset(
-                              'assets/svg/ActiveHome.svg',
-                              height: 24,
-                              width: 24,
-                            )
-                          : SvgPicture.asset(
-                              'assets/svg/House.svg',
-                              height: 24,
-                              width: 24,
-                            ),
-                      const SizedBox(height: 2),
-                      MyText(
-                        myText: 'Home',
-                        fontSize: 14.0,
-                        textColor: _bottomNavIndex == 0
-                            ? ColorConstant.whiteColor
-                            : ColorConstant.greyColor.withOpacity(0.70),
-                        fontweight: FontWeight.w500,
-                      ),
-                    ],
+                  child: Container(
+                    width: 60,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/home.svg',
+                          height: 20,
+                          width: 20,
+                          color: _bottomNavIndex == 0
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                        ),
+                        const SizedBox(height: 2),
+                        MyText(
+                          myText: 'Daily',
+                          fontSize: 12.0,
+                          textColor: _bottomNavIndex == 0
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.70),
+                          fontweight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -88,100 +122,107 @@ class _HomePageState extends State<HomePage> {
                       currentScreen =
                           sub_message == "Your subscription has been ended"
                               ? const ChooseYourPlan()
-                              : const ContestPage();
+                              : const AllContestPage();
                       _bottomNavIndex = 1;
                     });
                   },
                   // minWidth: 40,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/svg/contest.svg',
-                        height: 20,
-                        width: 20,
-                        color: _bottomNavIndex == 1
-                            ? Colors.blueGrey.shade900
-                            : ColorConstant.greyColor.withOpacity(0.70),
-                      ),
-                      const SizedBox(height: 2),
-                      MyText(
-                        myText: 'Contest',
-                        fontSize: 14.0,
-                        textColor: _bottomNavIndex == 1
-                            ? ColorConstant.whiteColor
-                            : ColorConstant.greyColor.withOpacity(0.60),
-                        fontweight: FontWeight.w500,
-                      ),
-                    ],
+                  child: Container(
+                    width: 60,
+                    margin: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/search.svg',
+                          height: 20,
+                          width: 20,
+                          color: _bottomNavIndex == 1
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                        ),
+                        const SizedBox(height: 2),
+                        MyText(
+                          myText: 'Contest',
+                          fontSize: 12.0,
+                          textColor: _bottomNavIndex == 1
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                          fontweight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      currentScreen = const UserProfile();
-                      _bottomNavIndex = 2;
-                    });
-                  },
-                  // minWidth: 40,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _bottomNavIndex == 2
-                          ? SvgPicture.asset(
-                              'assets/svg/ActiveProfile.svg',
-                              height: 24,
-                              width: 24,
-                            )
-                          : SvgPicture.asset(
-                              'assets/svg/Profile.svg',
-                              height: 24,
-                              width: 24,
-                            ),
-                      const SizedBox(height: 2),
-                      MyText(
-                        myText: 'User',
-                        fontSize: 14.0,
-                        textColor: _bottomNavIndex == 2
-                            ? ColorConstant.whiteColor
-                            : ColorConstant.greyColor.withOpacity(0.60),
-                        fontweight: FontWeight.w500,
-                      ),
-                    ],
-                  ),
-                ),
+
                 GestureDetector(
                   onTap: () {
                     setState(() {
                       currentScreen = const MyArt();
+                      _bottomNavIndex = 2;
+                    });
+                  },
+                  // minWidth: 40,
+                  child: Container(
+                    width: 60,
+                    margin: const EdgeInsets.only(left: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/Heart.svg',
+                          height: 20,
+                          width: 20,
+                          color: _bottomNavIndex == 2
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                        ),
+                        const SizedBox(height: 2),
+                        MyText(
+                          myText: 'My Art',
+                          fontSize: 12.0,
+                          textColor: _bottomNavIndex == 2
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.70),
+                          fontweight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // 4
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      currentScreen = const UserProfile();
                       _bottomNavIndex = 3;
                     });
                   },
                   // minWidth: 40,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _bottomNavIndex == 3
-                          ? SvgPicture.asset(
-                              'assets/svg/ActiveHeart.svg',
-                              height: 20,
-                              width: 20,
-                            )
-                          : SvgPicture.asset(
-                              'assets/svg/Heart.svg',
-                              height: 20,
-                              width: 20,
-                            ),
-                      const SizedBox(height: 2),
-                      MyText(
-                        myText: 'My Art',
-                        fontSize: 14.0,
-                        textColor: _bottomNavIndex == 3
-                            ? ColorConstant.whiteColor
-                            : ColorConstant.greyColor.withOpacity(0.70),
-                        fontweight: FontWeight.w500,
-                      ),
-                    ],
+                  child: Container(
+                    width: 60,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/svg/user.svg',
+                          height: 20,
+                          width: 20,
+                          color: _bottomNavIndex == 3
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                        ),
+                        const SizedBox(height: 2),
+                        MyText(
+                          myText: 'User',
+                          fontSize: 12.0,
+                          textColor: _bottomNavIndex == 3
+                              ? ColorConstant.buttonColor2
+                              : ColorConstant.greyColor.withOpacity(0.60),
+                          fontweight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

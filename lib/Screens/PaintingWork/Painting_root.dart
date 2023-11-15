@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:colorvelvetus/Providers/ResetPassword.dart';
 import 'package:http/http.dart' as http;
 import 'package:colorvelvetus/Screens/PaintingWork/WorldMap.dart';
@@ -13,10 +14,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PaintingRootPage extends StatefulWidget {
   Map mArt;
+  String artID;
 
   PaintingRootPage({
     super.key,
     required this.mArt,
+    required this.artID,
   });
 
   @override
@@ -25,38 +28,91 @@ class PaintingRootPage extends StatefulWidget {
 
 class _PaintingRootPageState extends State<PaintingRootPage> {
   bool isAdLoaded = false;
+  bool isLoading = false;
+  File? _imageFile;
   ResetPasswordProvider colorChangeProvider = ResetPasswordProvider();
-  //
-
-  String message = '';
-  String userID = '';
-  String contestID = '';
-
-  // get user profile
-  Future<Map<String, dynamic>> getUserData() async {
+  // add my art
+  Future<void> uploadNetworkImage2() async {
+    print(isLoading);
+    setState(() {
+      isLoading = true;
+    });
+    print(isLoading);
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userEmail = prefs.getString('userEmail').toString();
     String myToken = prefs.getString('getaccesToken').toString();
-    final Uri url = Uri.parse('https://cv.glamouride.org/api/get-profile');
-
-    final Map<String, String> headers = {
-      'Authorization': 'Bearer $myToken',
-    };
 
     try {
-      final response = await http.post(url, headers: headers);
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://cv.glamouride.org/api/upload-art'),
+      );
 
+      // Add headers, including the access token
+      request.headers['Authorization'] = 'Bearer $myToken';
+
+      request.fields['email'] = userEmail;
+      request.fields['art_id'] = widget.artID;
+      request.files.add(
+        await http.MultipartFile.fromPath('image', _imageFile!.path),
+      );
+
+      var response = await request.send();
+
+      // Check the response
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
+        String message = 'Image uploaded successfully';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
         setState(() {
-          userID = jsonData['user']['id'].toString();
+          isLoading = false;
         });
-        return jsonData['user'];
       } else {
-        throw Exception(
-            'API call failed with status code: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+        print('Failed to upload image. Status code: ${response.statusCode}');
+        String message = 'Failed to upload image. Status code';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
+        print('Response body: ${await response.stream.bytesToString()}');
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      setState(() {
+        isLoading = false;
+      });
+      print('Error Reasone is:: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: ColorConstant.whiteColor,
+          content: Text(
+            'Failed to upload : $e',
+            style: TextStyle(
+              color: ColorConstant.buttonColor2,
+            ),
+          ),
+        ),
+      );
     }
   }
 
@@ -75,9 +131,6 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        setState(() {
-          contestID = jsonData['contests']['data'][0]['id'].toString();
-        });
         return jsonData['contests']['data'];
       } else {
         throw Exception(
@@ -110,62 +163,11 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
     bannerAd.load();
   }
 
-  //
-  Future<void> addArtToContest() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String myToken = prefs.getString('getaccesToken').toString();
-    String apiUrl = "https://cv.glamouride.org/api/add-to-contest";
-    // print('id' + widget.coloringImage.artID);
-
-    Map<String, dynamic> data = {
-      'user_id': userID.toString(),
-      'art_id': widget.mArt["id"].toString(),
-      'contest_id': contestID.toString(),
-    };
-    print(data);
-
-    // Convert the map to a JSON string
-    String body = jsonEncode(data);
-
-    try {
-      // Make the POST request
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $myToken',
-        },
-        body: body,
-      );
-
-      // Check if the request was successful (status code 200)
-      final jsonData = jsonDecode(response.body);
-      setState(() {
-        message = jsonData['message'];
-      });
-      if (response.statusCode == 200) {
-        print(jsonData['message']);
-        print("Data posted successfully");
-      } else {
-        // If the server did not return a 200 OK response,
-        // throw an exception.
-        throw Exception('Failed to post data');
-      }
-    } catch (error) {
-      // setState(() {
-      //     message = jsonData['message'];
-      //   });
-      print("Error: $error");
-      // Handle the error
-    }
-  }
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     initBannerAdd();
-    getUserData();
     getContests();
   }
 
@@ -218,88 +220,37 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
                       fontSize:
                           MediaQuery.of(context).size.width < 361 ? 18.0 : 22.0,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                content: Text(
-                                  'Art add to Contest !',
-                                  style: GoogleFonts.lato(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    color: ColorConstant.blackColor,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text(
-                                      'Cancel',
-                                      style: GoogleFonts.lato(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w400,
-                                        color: ColorConstant.blackColor,
-                                        letterSpacing: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      addArtToContest();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                              backgroundColor:
-                                                  Colors.blue.shade300,
-                                              content: Text(
-                                                message,
-                                                style: GoogleFonts.lato(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400,
-                                                  color: Colors.white,
-                                                ),
-                                              )));
-
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text(
-                                      'Add',
-                                      style: GoogleFonts.lato(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w400,
-                                        color: ColorConstant.blackColor,
-                                        letterSpacing: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            });
-                      },
-                      child: Image.asset(
-                        'assets/images/contest.jpg',
-                        height: 40,
-                        width: 40,
-                      ),
-                    ),
+                    const Text(''),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     uploadNetworkImage2();
+                    //   },
+                    //   child: isLoading
+                    //       ? SizedBox(
+                    //           height: 40,
+                    //           width: 40,
+                    //           child: CircularProgressIndicator(
+                    //             color: ColorConstant.whiteColor,
+                    //           ))
+                    //       : Image.asset(
+                    //           'assets/images/contest.jpg',
+                    //           height: 40,
+                    //           width: 40,
+                    //         ),
+                    // ),
                   ],
                 ),
               ),
 
               // image
               Container(
-                height: MediaQuery.of(context).size.height * 0.70,
+                height: MediaQuery.of(context).size.height * 0.60,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: ColorConstant.buttonColor2,
                 ),
                 child: InteractiveViewer(
-                  child: WorldMap(widget.mArt),
+                  child: WorldMap(widget.mArt,widget.artID),
                   maxScale: 6.5,
                 ),
               ),

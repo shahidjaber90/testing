@@ -82,7 +82,7 @@ class GoogleServices {
       accessTokens = responseData['access_token'];
       await prefs.setString('getaccesToken', accessTokens!);
       print('api ::: $accessTokens');
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => HomePage(),

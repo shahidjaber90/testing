@@ -6,8 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
-import 'package:colorvelvetus/Widgets/CardWidget.dart';
-import 'package:colorvelvetus/Widgets/MyText.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyArt extends StatefulWidget {
