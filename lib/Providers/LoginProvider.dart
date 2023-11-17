@@ -50,8 +50,8 @@ class LoginProvider with ChangeNotifier {
         var accessToken = responseData['access_token'];
         var sub_message = responseData['sub_message'];
         await prefs.setString('getaccesToken', accessToken);
-        await prefs.setString('sub_message', sub_message);  
-        await prefs.setString('userEmail', emailController);  
+        await prefs.setString('sub_message', sub_message);
+        await prefs.setString('userEmail', emailController);
         // ignore: avoid_print
         print(accessToken);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -71,13 +71,39 @@ class LoginProvider with ChangeNotifier {
 
         isLoading = false;
         notifyListeners();
+      } else if (responseData.length != 1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.buttonColor2,
+            content: Text(
+              responseData['errors'][0],
+              style: TextStyle(
+                color: ColorConstant.whiteColor,
+              ),
+            ),
+          ),
+        );
+        isLoading = false;
+        notifyListeners();
       } else {
         isLoading = false;
         notifyListeners();
         // ignore: avoid_print
         print(message);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.buttonColor2,
+            content: Text(
+              '$message. Password Invalid',
+              style: TextStyle(
+                color: ColorConstant.whiteColor,
+              ),
+            ),
+          ),
+        );
       }
     } catch (e) {
+      // message = responseData['message'];
       isLoading = false;
       notifyListeners();
       // ignore: avoid_print

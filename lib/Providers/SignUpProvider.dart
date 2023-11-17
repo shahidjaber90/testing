@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -79,10 +80,12 @@ class RegisterProvider with ChangeNotifier {
 
     final response = await request.send();
 
-    var result = await response.stream.bytesToString();
-    String message = result[0];
-    if (response.statusCode == 200) {
+    final result = await response.stream.bytesToString();
+    final Map<String, dynamic> resultMap = json.decode(result);
+    String message = resultMap['message'];
+    if (response.statusCode == 200 && message != 'Request data missing') {
       isLoading = false;
+      notifyListeners();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: ColorConstant.whiteColor,
@@ -107,17 +110,16 @@ class RegisterProvider with ChangeNotifier {
       notifyListeners();
       // Request failed, handle the error
       print('Error:>>> ${response.statusCode}');
-      print('response data ${message}');
+      print('response data ${'message'}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.red,
+          backgroundColor: ColorConstant.buttonColor2,
           content: Text(
-            'SignUp Failed: This email is already exists.',
+            resultMap['errors'][0],
             style: TextStyle(color: ColorConstant.whiteColor),
           ),
         ),
       );
     }
   }
-
 }

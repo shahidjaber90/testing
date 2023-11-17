@@ -9,4 +9,5 @@ class ColorConstant {
   static Color buttonColor = const Color(0XFFFC7753);
   static Color buttonColor2 = const Color(0XFFFF4476);
   static Color purpleColor = const Color.fromARGB(255, 159, 38, 178);
+  static Color? tempColor;
 }

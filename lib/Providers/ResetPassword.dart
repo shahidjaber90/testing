@@ -1,6 +1,12 @@
+import 'dart:io';
+
+import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class ResetPasswordProvider with ChangeNotifier {
+  bool isLoading = false;
   bool isObscure = true;
   bool isObscure2 = true;
   Color selectedColor = Colors.transparent;
@@ -30,8 +36,79 @@ class ResetPasswordProvider with ChangeNotifier {
     const Color(0XFF6495ED),
     const Color(0XFF89CFF0),
   ];
- 
 
+  Future<void> uploadNetworkImage2(
+      String artID, File imageFile, context) async {
+    isLoading = true;
+    notifyListeners();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userEmail = prefs.getString('userEmail').toString();
+    String myToken = prefs.getString('getaccesToken').toString();
+    print('userEmail: $userEmail');
+    print('artID: $artID');
+    print('artID: $imageFile');
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://cv.glamouride.org/api/upload-art'),
+      );
+
+      // Add headers, including the access token
+      request.headers['Authorization'] = 'Bearer $myToken';
+
+      request.fields['email'] = userEmail;
+      request.fields['art_id'] = artID;
+      request.files.add(
+        await http.MultipartFile.fromPath('image', imageFile!.path),
+      );
+
+      var response = await request.send();
+
+      // Check the response
+      if (response.statusCode == 200) {
+        isLoading = false;
+        notifyListeners();
+        String message = 'Image uploaded successfully';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
+      } else {
+        isLoading = false;
+        notifyListeners();
+        print('Failed to upload image. Status code: ${response.statusCode}');
+        String message = 'Failed to upload image. Status code';
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: ColorConstant.whiteColor,
+            content: Text(
+              message,
+              style: TextStyle(
+                color: ColorConstant.buttonColor2,
+              ),
+            ),
+          ),
+        );
+        print('Response body: ${await response.stream.bytesToString()}');
+      }
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
+      print('Error Reasone is:: $e');
+    }
+  }
+
+  ///////////
   void isObscureText() {
     isObscure = !isObscure;
     notifyListeners();

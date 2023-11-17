@@ -38,23 +38,59 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   bool isLoading = false;
   List<Map<String, dynamic>> data = [];
   List<Map<String, dynamic>> cateData = [];
-  String cateIndex = '9';
+  String cateIndex = '1';
   final myItems = [
-    Image.asset(
-      'assets/images/image-1.jpg',
-      fit: BoxFit.cover,
+    Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/image-1.jpg',
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
     ),
-    Image.asset(
-      'assets/images/image-2.jpg',
-      fit: BoxFit.cover,
+    Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/image-2.jpg',
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
     ),
-    Image.asset(
-      'assets/images/image-3.png',
-      fit: BoxFit.cover,
+    Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/image-3.png',
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
     ),
-    Image.asset(
-      'assets/images/image-4.jpg',
-      fit: BoxFit.cover,
+    Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: AssetImage(
+            'assets/images/image-4.jpg',
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
     ),
   ];
   // set variable to store image
@@ -391,49 +427,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                             ),
 
                             // Carousel Slider
-                            Container(
-                              height: MediaQuery.of(context).size.height * 0.18,
-                              width: double.infinity,
-                              // color: ColorConstant.blackColor,
-                              child: Column(
-                                children: [
-                                  CarouselSlider(
-                                    options: CarouselOptions(
-                                      autoPlay: true,
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.16,
-                                      autoPlayCurve: Curves.decelerate,
-                                      autoPlayAnimationDuration:
-                                          const Duration(milliseconds: 700),
-                                      autoPlayInterval:
-                                          const Duration(seconds: 2),
-                                      enlargeCenterPage: true,
-                                      aspectRatio: 2,
-                                      onPageChanged: (index, reason) {
-                                        setState(() {
-                                          currentIndex = index;
-                                        });
-                                      },
-                                    ),
-                                    items: myItems,
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  AnimatedSmoothIndicator(
-                                    activeIndex: currentIndex,
-                                    count: myItems.length,
-                                    effect: WormEffect(
-                                      dotHeight: 8,
-                                      dotWidth: 8,
-                                      spacing: 12,
-                                      dotColor: Colors.grey.shade800,
-                                      activeDotColor: Colors.grey.shade200,
-                                      paintStyle: PaintingStyle.fill,
-                                    ),
-                                  ),
-                                ],
+                            CarouselSlider(
+                              options: CarouselOptions(
+                                autoPlay: true,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.16,
+                                autoPlayCurve: Curves.decelerate,
+                                autoPlayAnimationDuration:
+                                    const Duration(milliseconds: 500),
+                                autoPlayInterval: const Duration(seconds: 2),
+                                aspectRatio: 4,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    currentIndex = index;
+                                  });
+                                },
+                              ),
+                              items: myItems,
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            AnimatedSmoothIndicator(
+                              activeIndex: currentIndex,
+                              count: myItems.length,
+                              effect: WormEffect(
+                                dotHeight: 8,
+                                dotWidth: 8,
+                                spacing: 12,
+                                dotColor: Colors.grey.shade800,
+                                activeDotColor: Colors.grey.shade200,
+                                paintStyle: PaintingStyle.fill,
                               ),
                             ),
                           ],
@@ -522,8 +546,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                   ),
                                   itemCount: data.length,
                                   itemBuilder: (context, index) {
+                                    bool isSvgImage(String url) {
+                                      return url.toLowerCase().endsWith('.svg');
+                                    }
+
                                     return GestureDetector(
                                       onTap: () {
+                                        double width =
+                                            double.parse(data[index]['width']);
+                                        double height =
+                                            double.parse(data[index]['width']);
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -538,7 +570,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       },
                                       child: Stack(
                                         children: [
-                                          data[index]['image_path'] == null
+                                          data[index]['image_path'] == null ||
+                                                  data[index]['image_path'][0]
+                                                          ['path'] ==
+                                                      null
                                               ? const SizedBox()
                                               : Container(
                                                   alignment: Alignment.center,
@@ -556,74 +591,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                       ),
                                                     ],
                                                   ),
-                                                  child: Image.network(
-                                                    data[index]['image'],
-                                                    fit: BoxFit.cover,
-                                                  )),
-                                          // data[index]['image_path'] == null
-                                          //     ? const SizedBox()
-                                          //     : Positioned(
-                                          //         right: 0,
-                                          //         child: isLoad
-                                          //             ? Container(
-                                          //                 padding:
-                                          //                     const EdgeInsets
-                                          //                         .all(8),
-                                          //                 height: 32,
-                                          //                 width: 32,
-                                          //                 child:
-                                          //                     CircularProgressIndicator(
-                                          //                   color: ColorConstant
-                                          //                       .buttonColor2,
-                                          //                 ),
-                                          //               )
-                                          //             : Container(
-                                          //                 margin:
-                                          //                     const EdgeInsets
-                                          //                         .symmetric(
-                                          //                         horizontal:
-                                          //                             12,
-                                          //                         vertical: 12),
-                                          //                 height: 32,
-                                          //                 width: 32,
-                                          //                 alignment:
-                                          //                     Alignment.center,
-                                          //                 decoration:
-                                          //                     BoxDecoration(
-                                          //                   shape:
-                                          //                       BoxShape.circle,
-                                          //                   color: ColorConstant
-                                          //                       .whiteColor,
-                                          //                 ),
-                                          //                 child:
-                                          //                     GestureDetector(
-                                          //                         onTap: () {
-                                          //                           // await _downloadImage(
-                                          //                           //     data[index]
-                                          //                           //         [
-                                          //                           //         'image']);
-                                          //                           // uploadNetworkImage2(data[index]
-                                          //                           //         [
-                                          //                           //         'id']
-                                          //                           //     .toString());
-                                          //                           setState(
-                                          //                               () {
-                                          //                             isFav =
-                                          //                                 !isFav;
-                                          //                           });
-                                          //                         },
-                                          //                         child: isFav
-                                          //                             ? SvgPicture
-                                          //                                 .asset(
-                                          //                                 'assets/svg/ActiveHeart.svg',
-                                          //                                 color:
-                                          //                                     Colors.red,
-                                          //                               )
-                                          //                             : SvgPicture
-                                          //                                 .asset(
-                                          //                                     'assets/svg/Heart.svg')),
-                                          //               ),
-                                          //       ),
+                                                  child: isSvgImage(
+                                                          data[index]['image'])
+                                                      ? SvgPicture.network(
+                                                          data[index]['image'],
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : Image.network(
+                                                          data[index]['image'],
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                ),
                                         ],
                                       ),
                                     );

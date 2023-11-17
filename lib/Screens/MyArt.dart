@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyArt extends StatefulWidget {
@@ -21,6 +22,48 @@ class _MyArtState extends State<MyArt> {
   String artID = '';
   String userID = '';
   String contestID = '';
+  List<String> contestlist = [];
+  List contestlist2 = [];
+
+  Future<List<dynamic>> getAllContests() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String myToken = prefs.getString('getaccesToken').toString();
+    final Uri url = Uri.parse('https://cv.glamouride.org/api/contests');
+
+    final Map<String, String> headers = {
+      'Authorization': 'Bearer $myToken',
+    };
+
+    try {
+      final response = await http.post(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        //
+        // example
+        Map<String, dynamic> datas = json.decode(response.body);
+        if (datas['result'] == true) {
+          List<Map<String, dynamic>> contest =
+              List<Map<String, dynamic>>.from(datas['contests']['data']);
+          for (var i = 0; i < contest.length; i++) {
+            setState(() {
+              contestlist.add(contest[i]['id'].toString());
+              contestlist2.add(contest[i]['title']);
+              print('list item: $contestlist');
+            });
+          }
+        }
+        //
+        final jsonData = jsonDecode(response.body);
+        // final datas = jsonData['arts'];
+        return jsonData['contests']['data'];
+      } else {
+        throw Exception(
+            'API call failed with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
 
   Future<List<dynamic>> getMyArt() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -128,6 +171,7 @@ class _MyArtState extends State<MyArt> {
     // TODO: implement initState
     super.initState();
     getMyArt();
+    getAllContests();
   }
 
   @override
@@ -136,13 +180,12 @@ class _MyArtState extends State<MyArt> {
     return Scaffold(
         backgroundColor:
             data.isEmpty ? ColorConstant.whiteColor : Colors.transparent,
-        body: data.isEmpty
+        body: data.isEmpty || data == null
             ? Center(
-                child: CircularProgressIndicator(
-                  color: ColorConstant.buttonColor2,
-                ),
-              )
-            : Stack(
+              child: LottieBuilder.asset(
+                                    'assets/lottie/noDataFound.json'),
+            )
+                              : Stack(
                 children: [
                   Container(
                     height: MediaQuery.of(context).size.height * 1.00,
@@ -194,6 +237,7 @@ class _MyArtState extends State<MyArt> {
                               style: GoogleFonts.eduTasBeginner(
                                 fontSize: 36,
                                 fontWeight: FontWeight.w500,
+                                color: ColorConstant.buttonColor2,
                               ),
                             ),
                             GestureDetector(
@@ -267,7 +311,7 @@ class _MyArtState extends State<MyArt> {
                                         alignment: Alignment.topCenter,
                                         width: screenWidth * 0.42,
                                         child: TextButton(
-                                            onPressed: () {
+                                            onPressed: () async {
                                               setState(() {
                                                 userID = data[index]['user_id']
                                                     .toString();
@@ -277,7 +321,60 @@ class _MyArtState extends State<MyArt> {
                                                         ['status']
                                                     .toString();
                                               });
-                                              addArtToContest();
+                                              await showDialog(
+                                                barrierDismissible: false,
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: Text('Back'),
+                                                      ),
+                                                    ],
+                                                    content: Container(
+                                                      height: 200,
+                                                      width: double.infinity,
+                                                      child: ListView.builder(
+                                                        itemCount:
+                                                            contestlist.length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return TextButton(
+                                                            onPressed: () {
+                                                              setState(() {
+                                                                contestID =
+                                                                    contestlist[
+                                                                            index]
+                                                                        .toString();
+                                                              });
+                                                              addArtToContest();
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  '${contestlist[index]}. ${contestlist2[index]}',
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .left,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
                                             },
                                             child: Row(
                                               mainAxisAlignment:

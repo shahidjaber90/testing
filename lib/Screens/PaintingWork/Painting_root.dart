@@ -249,10 +249,24 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
                 decoration: BoxDecoration(
                   color: ColorConstant.buttonColor2,
                 ),
-                child: InteractiveViewer(
-                  child: WorldMap(widget.mArt,widget.artID),
-                  maxScale: 6.5,
+                child: Center(
+                  child: InteractiveViewer(
+                    onInteractionEnd: (details) {
+                      print("ZoomChecker ended $details");
+                      WorldMap.pickerColor = ColorConstant.tempColor;
+                    },
+                    onInteractionUpdate: (details) {
+                      ColorConstant.tempColor = WorldMap.pickerColor;
+                      WorldMap.pickerColor = null;
+                    },
+                    maxScale: 2.5,
+                    child: WorldMap(widget.mArt, widget.artID),
+                  ),
                 ),
+                // child: InteractiveViewer(
+                //   child: WorldMap(widget.mArt,widget.artID),
+                //   maxScale: 6.5,
+                // ),
               ),
 
               //
