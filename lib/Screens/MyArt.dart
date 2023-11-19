@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:colorvelvetus/Providers/LogoutProvider.dart';
+import 'package:colorvelvetus/Screens/ContestArtView.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -65,7 +66,12 @@ class _MyArtState extends State<MyArt> {
     }
   }
 
+  bool isLoading = false;
+
   Future<List<dynamic>> getMyArt() async {
+    setState(() {
+      isLoading = true;
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String myToken = prefs.getString('getaccesToken').toString();
     final Uri url = Uri.parse('https://cv.glamouride.org/api/my-arts');
@@ -84,14 +90,23 @@ class _MyArtState extends State<MyArt> {
               List<Map<String, dynamic>>.from(datas['arts']['data']);
           setState(() {
             data = result;
+            isLoading = false;
           });
         }
         return datas['arts']['data'];
       } else {
+        setState(() {
+          data.clear();
+          isLoading = false;
+        });
         throw Exception(
             'API call failed with status code: ${response.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        data.clear();
+        isLoading = false;
+      });
       throw Exception('Error: $e');
     }
   }
@@ -180,260 +195,299 @@ class _MyArtState extends State<MyArt> {
     return Scaffold(
         backgroundColor:
             data.isEmpty ? ColorConstant.whiteColor : Colors.transparent,
-        body: data.isEmpty || data == null
+        body: isLoading
             ? Center(
-              child: LottieBuilder.asset(
-                                    'assets/lottie/noDataFound.json'),
-            )
-                              : Stack(
-                children: [
-                  Container(
-                    height: MediaQuery.of(context).size.height * 1.00,
-                    width: MediaQuery.of(context).size.width * 1.00,
-                    decoration: const BoxDecoration(
-                        image: DecorationImage(
-                      image: AssetImage('assets/images/background.png'),
-                      alignment: Alignment.topRight,
-                    )),
-                  ),
-                  Container(
-                    height: MediaQuery.of(context).size.height * 1.00,
-                    width: MediaQuery.of(context).size.width * 1.00,
-                    decoration: const BoxDecoration(
-                        image: DecorationImage(
-                      image: AssetImage('assets/images/background2.png'),
-                      alignment: Alignment.bottomLeft,
-                    )),
-                  ),
-                  Container(
-                    alignment: Alignment.topRight,
-                    padding: const EdgeInsets.only(right: 10),
-                    height: MediaQuery.of(context).size.height * 1.00,
-                    width: MediaQuery.of(context).size.width * 1.00,
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                child: CircularProgressIndicator(
+                  color: ColorConstant.buttonColor2,
+                ),
+              )
+            : data.isEmpty
+                ? Center(
+                    child:
+                        LottieBuilder.asset('assets/lottie/noDataFound.json'),
+                  )
+                : Stack(
+                    children: [
+                      Container(
+                        height: MediaQuery.of(context).size.height * 1.00,
+                        width: MediaQuery.of(context).size.width * 1.00,
+                        decoration: const BoxDecoration(
+                            image: DecorationImage(
+                          image: AssetImage('assets/images/background.png'),
+                          alignment: Alignment.topRight,
+                        )),
+                      ),
+                      Container(
+                        height: MediaQuery.of(context).size.height * 1.00,
+                        width: MediaQuery.of(context).size.width * 1.00,
+                        decoration: const BoxDecoration(
+                            image: DecorationImage(
+                          image: AssetImage('assets/images/background2.png'),
+                          alignment: Alignment.bottomLeft,
+                        )),
+                      ),
+                      Container(
+                        alignment: Alignment.topRight,
+                        padding: const EdgeInsets.only(right: 10),
+                        height: MediaQuery.of(context).size.height * 1.00,
+                        width: MediaQuery.of(context).size.width * 1.00,
+                        child: Column(
                           children: [
-                            Image.asset(
-                              'assets/images/rightStar.png',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12)
-                        .copyWith(top: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'My Painting',
-                              style: GoogleFonts.eduTasBeginner(
-                                fontSize: 36,
-                                fontWeight: FontWeight.w500,
-                                color: ColorConstant.buttonColor2,
-                              ),
-                            ),
-                            GestureDetector(
-                                onTap: () async {
-                                  LogOutProvider logoutProvider =
-                                      LogOutProvider();
-                                  SharedPreferences prefs =
-                                      await SharedPreferences.getInstance();
-                                  // ignore: use_build_context_synchronously
-                                  await logoutProvider
-                                      .logoutFunction(context)
-                                      .then((value) =>
-                                          prefs.remove('getaccesToken'));
-                                  final GoogleSignIn googleSignIn =
-                                      GoogleSignIn();
-                                  await googleSignIn.signOut();
-                                  await FirebaseAuth.instance.signOut();
-                                  print('logout successfully');
-                                },
-                                child: Icon(
-                                  Icons.logout_outlined,
-                                  color: ColorConstant.blackColor,
-                                  size: 30,
-                                )),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Expanded(
-                            child: GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: (screenWidth * 0.42 / 190),
-                            // crossAxisSpacing: 10,
-                            // mainAxisSpacing: 10,
-                          ),
-                          itemCount: data.length,
-                          itemBuilder: (context, index) {
-                            return Stack(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 7),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: ColorConstant.buttonColor2
-                                          .withOpacity(
-                                        0.40,
-                                      ),
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
+                                Image.asset(
+                                  'assets/images/rightStar.png',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12)
+                            .copyWith(top: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'My Painting',
+                                  style: GoogleFonts.eduTasBeginner(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.w500,
+                                    color: ColorConstant.buttonColor2,
                                   ),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        height: 150,
-                                        width: screenWidth * 0.42,
-                                        margin: const EdgeInsets.symmetric(
-                                                horizontal: 5)
-                                            .copyWith(top: 10),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            image: DecorationImage(
-                                                image: NetworkImage(
-                                                  data[index]['image'],
-                                                ),
-                                                fit: BoxFit.cover)),
+                                ),
+                                GestureDetector(
+                                    onTap: () async {
+                                      LogOutProvider logoutProvider =
+                                          LogOutProvider();
+                                      SharedPreferences prefs =
+                                          await SharedPreferences.getInstance();
+                                      // ignore: use_build_context_synchronously
+                                      await logoutProvider
+                                          .logoutFunction(context)
+                                          .then((value) =>
+                                              prefs.remove('getaccesToken'));
+                                      final GoogleSignIn googleSignIn =
+                                          GoogleSignIn();
+                                      await googleSignIn.signOut();
+                                      await FirebaseAuth.instance.signOut();
+                                      print('logout successfully');
+                                    },
+                                    child: Icon(
+                                      Icons.logout_outlined,
+                                      color: ColorConstant.blackColor,
+                                      size: 30,
+                                    )),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Expanded(
+                                child: GridView.builder(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: (screenWidth * 0.42 / 190),
+                                // crossAxisSpacing: 10,
+                                // mainAxisSpacing: 10,
+                              ),
+                              itemCount: data.length,
+                              itemBuilder: (context, index) {
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 7),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: ColorConstant.buttonColor2
+                                              .withOpacity(
+                                            0.40,
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      Container(
-                                        height: 40,
-                                        alignment: Alignment.topCenter,
-                                        width: screenWidth * 0.42,
-                                        child: TextButton(
-                                            onPressed: () async {
-                                              setState(() {
-                                                userID = data[index]['user_id']
-                                                    .toString();
-                                                artID = data[index]['art_id']
-                                                    .toString();
-                                                contestID = data[index]
-                                                        ['status']
-                                                    .toString();
-                                              });
-                                              await showDialog(
-                                                barrierDismissible: false,
-                                                context: context,
-                                                builder: (context) {
-                                                  return AlertDialog(
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                        child: Text('Back'),
-                                                      ),
-                                                    ],
-                                                    content: Container(
-                                                      height: 200,
-                                                      width: double.infinity,
-                                                      child: ListView.builder(
-                                                        itemCount:
-                                                            contestlist.length,
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return TextButton(
+                                      child: Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ContestArtView(
+                                                            artImage: data[
+                                                                        index]
+                                                                    ['image']
+                                                                .toString(),
+                                                            profileImage:
+                                                                data[index]
+                                                                    ['image'],
+                                                          )));
+                                            },
+                                            child: Container(
+                                              height: 150,
+                                              width: screenWidth * 0.42,
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                          horizontal: 5)
+                                                      .copyWith(top: 10),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                // image: DecorationImage(
+                                                //   image: NetworkImage(
+                                                //     data[index]['image'],
+                                                //   ),
+                                                //   scale: 1.2,
+                                                //   fit: BoxFit.cover,
+                                                // )
+                                              ),
+                                              child: Image.network(
+                                                data[index]['image'],
+                                                fit: BoxFit.cover,
+                                                height: 100,
+                                                width: 100,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 40,
+                                            alignment: Alignment.topCenter,
+                                            width: screenWidth * 0.42,
+                                            child: TextButton(
+                                                onPressed: () async {
+                                                  setState(() {
+                                                    userID = data[index]
+                                                            ['user_id']
+                                                        .toString();
+                                                    artID = data[index]
+                                                            ['art_id']
+                                                        .toString();
+                                                    contestID = data[index]
+                                                            ['status']
+                                                        .toString();
+                                                  });
+                                                  await showDialog(
+                                                    barrierDismissible: false,
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return AlertDialog(
+                                                        actions: [
+                                                          TextButton(
                                                             onPressed: () {
-                                                              setState(() {
-                                                                contestID =
-                                                                    contestlist[
-                                                                            index]
-                                                                        .toString();
-                                                              });
-                                                              addArtToContest();
                                                               Navigator.pop(
                                                                   context);
                                                             },
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                  '${contestlist[index]}. ${contestlist2[index]}',
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .left,
+                                                            child: Text('Back'),
+                                                          ),
+                                                        ],
+                                                        content: Container(
+                                                          height: 200,
+                                                          width:
+                                                              double.infinity,
+                                                          child:
+                                                              ListView.builder(
+                                                            itemCount:
+                                                                contestlist
+                                                                    .length,
+                                                            itemBuilder:
+                                                                (context,
+                                                                    index) {
+                                                              return TextButton(
+                                                                onPressed: () {
+                                                                  setState(() {
+                                                                    contestID =
+                                                                        contestlist[index]
+                                                                            .toString();
+                                                                  });
+                                                                  addArtToContest();
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      '${contestlist[index]}. ${contestlist2[index]}',
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .left,
+                                                                    ),
+                                                                  ],
                                                                 ),
-                                                              ],
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
                                                   );
                                                 },
-                                              );
-                                            },
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  'Add To Contest',
-                                                  style: GoogleFonts.lato(
-                                                    fontSize: screenWidth < 361
-                                                        ? 12
-                                                        : 16,
-                                                    color: ColorConstant
-                                                        .buttonColor2,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Icon(
-                                                  Icons.arrow_forward,
-                                                  color: ColorConstant
-                                                      .buttonColor2,
-                                                )
-                                              ],
-                                            )),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                // Positioned(
-                                //   right: 0,
-                                //   child: Container(
-                                //     margin: const EdgeInsets.symmetric(
-                                //         horizontal: 12, vertical: 12),
-                                //     height: 32,
-                                //     width: 32,
-                                //     alignment: Alignment.center,
-                                //     decoration: BoxDecoration(
-                                //       shape: BoxShape.circle,
-                                //       color: ColorConstant.blackColor,
-                                //     ),
-                                //     child: GestureDetector(
-                                //       onTap: () {
-                                //       },
-                                //       // child: _imageFile != null
-                                //       //     ? Image.file(_imageFile!)
-                                //       child: Icon(
-                                //         Icons.add,
-                                //         color: Colors.green.shade500,
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
-                              ],
-                            );
-                          },
-                        ))
-                      ],
-                    ),
-                  ),
-                ],
-              ));
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      'Add To Contest',
+                                                      style: GoogleFonts.lato(
+                                                        fontSize:
+                                                            screenWidth < 361
+                                                                ? 12
+                                                                : 16,
+                                                        color: ColorConstant
+                                                            .buttonColor2,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Icon(
+                                                      Icons.arrow_forward,
+                                                      color: ColorConstant
+                                                          .buttonColor2,
+                                                    )
+                                                  ],
+                                                )),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    // Positioned(
+                                    //   right: 0,
+                                    //   child: Container(
+                                    //     margin: const EdgeInsets.symmetric(
+                                    //         horizontal: 12, vertical: 12),
+                                    //     height: 32,
+                                    //     width: 32,
+                                    //     alignment: Alignment.center,
+                                    //     decoration: BoxDecoration(
+                                    //       shape: BoxShape.circle,
+                                    //       color: ColorConstant.blackColor,
+                                    //     ),
+                                    //     child: GestureDetector(
+                                    //       onTap: () {
+                                    //       },
+                                    //       // child: _imageFile != null
+                                    //       //     ? Image.file(_imageFile!)
+                                    //       child: Icon(
+                                    //         Icons.add,
+                                    //         color: Colors.green.shade500,
+                                    //       ),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                  ],
+                                );
+                              },
+                            ))
+                          ],
+                        ),
+                      ),
+                    ],
+                  ));
   }
 }

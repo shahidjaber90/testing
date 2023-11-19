@@ -31,8 +31,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  // List<Color> itemColors =
-  //     List.generate(categoryData.length, (index) => Colors.transparent);
   int currentIndex = 0;
   int activeIndex = 0;
   bool isLoading = false;
@@ -233,7 +231,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     } catch (e) {
       setState(() {
         data.clear();
-        isLoading = true;
+        isLoading = false;
       });
       throw Exception('Errorrrrrrrrrrrrr: $e');
     }
@@ -431,7 +429,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                               options: CarouselOptions(
                                 autoPlay: true,
                                 height:
-                                    MediaQuery.of(context).size.height * 0.16,
+                                    MediaQuery.of(context).size.height * 0.145,
                                 autoPlayCurve: Curves.decelerate,
                                 autoPlayAnimationDuration:
                                     const Duration(milliseconds: 500),
@@ -523,92 +521,110 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                 height:
                                     MediaQuery.of(context).size.height * 0.50,
                                 child: Center(
-                                  child: LottieBuilder.asset(
-                                    'assets/lottie/noDataFound.json',
-                                    width: double.infinity,
-                                  ),
-                                ),
+                                    child: CircularProgressIndicator(
+                                  color: ColorConstant.buttonColor2,
+                                )),
                               ),
                             )
-                          : Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10)
-                                        .copyWith(top: 10),
-                                child: GridView.builder(
-                                  physics: const BouncingScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    childAspectRatio: (550 / Swidth * 0.40),
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 16,
-                                    mainAxisSpacing: 16,
+                          : data.isEmpty
+                              ? Expanded(
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.50,
+                                    child: Center(
+                                      child: LottieBuilder.asset(
+                                        'assets/lottie/noDataFound.json',
+                                        width: double.infinity,
+                                      ),
+                                    ),
                                   ),
-                                  itemCount: data.length,
-                                  itemBuilder: (context, index) {
-                                    bool isSvgImage(String url) {
-                                      return url.toLowerCase().endsWith('.svg');
-                                    }
+                                )
+                              : Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                            horizontal: 10)
+                                        .copyWith(top: 10),
+                                    child: GridView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        childAspectRatio: (550 / Swidth * 0.40),
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 16,
+                                        mainAxisSpacing: 16,
+                                      ),
+                                      itemCount: data.length,
+                                      itemBuilder: (context, index) {
+                                        bool isSvgImage(String url) {
+                                          return url
+                                              .toLowerCase()
+                                              .endsWith('.svg');
+                                        }
 
-                                    return GestureDetector(
-                                      onTap: () {
-                                        double width =
-                                            double.parse(data[index]['width']);
-                                        double height =
-                                            double.parse(data[index]['width']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                PaintingRootPage(
-                                              mArt: data[index],
-                                              artID:
-                                                  data[index]['id'].toString(),
-                                            ),
+                                        return GestureDetector(
+                                          onTap: () {
+                                            double width = double.parse(
+                                                data[index]['width']);
+                                            double height = double.parse(
+                                                data[index]['width']);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    PaintingRootPage(
+                                                  mArt: data[index],
+                                                  artID: data[index]['id']
+                                                      .toString(),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              data[index]['image_path'] ==
+                                                          null ||
+                                                      data[index]['image_path']
+                                                              [0]['path'] ==
+                                                          null
+                                                  ? const SizedBox()
+                                                  : Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color: ColorConstant
+                                                            .whiteColor,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: ColorConstant
+                                                                .greyColor,
+                                                            blurRadius: 6.0,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: isSvgImage(
+                                                              data[index]
+                                                                  ['image'])
+                                                          ? SvgPicture.network(
+                                                              data[index]
+                                                                  ['image'],
+                                                              // fit: BoxFit.cover,
+                                                            )
+                                                          : Image.network(
+                                                              data[index]
+                                                                  ['image'],
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                    ),
+                                            ],
                                           ),
                                         );
                                       },
-                                      child: Stack(
-                                        children: [
-                                          data[index]['image_path'] == null ||
-                                                  data[index]['image_path'][0]
-                                                          ['path'] ==
-                                                      null
-                                              ? const SizedBox()
-                                              : Container(
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                    color: ColorConstant
-                                                        .whiteColor,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: ColorConstant
-                                                            .greyColor,
-                                                        blurRadius: 6.0,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: isSvgImage(
-                                                          data[index]['image'])
-                                                      ? SvgPicture.network(
-                                                          data[index]['image'],
-                                                          fit: BoxFit.cover,
-                                                        )
-                                                      : Image.network(
-                                                          data[index]['image'],
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                ),
-                                        ],
-                                      ),
-                                    );
-                                  },
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
                     ],
                   ),
                 ),

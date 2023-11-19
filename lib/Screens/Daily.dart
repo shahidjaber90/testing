@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:colorvelvetus/Screens/ContestPage.dart';
+import 'package:colorvelvetus/Screens/PaintingWork/Painting_root.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:colorvelvetus/Widgets/CardWidget.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:colorvelvetus/Utils/LocalVariables.dart';
@@ -16,6 +18,7 @@ class DailyPage extends StatefulWidget {
 
 class _DailyPageState extends State<DailyPage> {
   late List<Contest> contests;
+  List<Map<String, dynamic>> data = [];
   bool isLoading = false;
 
   void loading() async {
@@ -34,7 +37,50 @@ class _DailyPageState extends State<DailyPage> {
   void initState() {
     super.initState();
     _fetchContests();
+    getArt();
     loading();
+  }
+
+  Future<List<dynamic>> getArt() async {
+    setState(() {
+      isLoading = true;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String myToken = prefs.getString('getaccesToken').toString();
+    final Uri url = Uri.parse('https://cv.glamouride.org/api/get-arts');
+
+    final Map<String, String> headers = {
+      'Authorization': 'Bearer $myToken',
+      // 'Authorization': 'Bearer 56|KlifdgZ3686pwfB3wwIsfkaEeaZBsbAf3g2vhdhx89312d7a',
+    };
+
+    try {
+      final response = await http.post(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final datas = jsonDecode(response.body);
+        if (datas['result'] == true) {
+          print('data : ${datas['arts']['data'][0]["name"]}');
+          List<Map<String, dynamic>> result =
+              List<Map<String, dynamic>>.from(datas['arts']['data']);
+
+          setState(() {
+            data = result;
+            isLoading = false;
+          });
+        }
+        return datas['arts']['data'];
+      } else {
+        throw Exception(
+            'API call failed with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        data.clear();
+        isLoading = true;
+      });
+      throw Exception('Errorrrrrrrrrrrrr: $e');
+    }
   }
 
   Future<void> _fetchContests() async {
@@ -123,8 +169,13 @@ class _DailyPageState extends State<DailyPage> {
                           child: CircularProgressIndicator(),
                         )
                       : ListView.builder(
-                          itemCount: contests.length + 1,
+                          itemCount: data.length,
+                          // itemCount: contests.length + 1,
                           itemBuilder: (context, index) {
+                            bool isSvgImage(String url) {
+                              return url.toLowerCase().endsWith('.svg');
+                            }
+
                             if (index == 0) {
                               // Display the heading
                               return ListTile(
@@ -144,17 +195,21 @@ class _DailyPageState extends State<DailyPage> {
                             }
 
                             // Display contest data
-                            Contest contest = contests[index - 1];
+                            final image = data[index - 1]['image'];
+                            final id = data[index]['id'];
+                            final date = data[index]['created_at'];
                             return GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ContestPage(
-                                      contestID: contest.id.toString(),
+                                    builder: (context) => PaintingRootPage(
+                                      mArt: data[index],
+                                      artID: id.toString(),
                                     ),
                                   ),
                                 );
+                                print('id' + id.toString());
                               },
                               child: Container(
                                 height: 190,
@@ -166,7 +221,7 @@ class _DailyPageState extends State<DailyPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _formatDate(contest.createdAt),
+                                      _formatDate(date),
                                       style: GoogleFonts.aBeeZee(
                                         fontWeight: FontWeight.w400,
                                         fontSize: 20,
@@ -191,19 +246,45 @@ class _DailyPageState extends State<DailyPage> {
                                                   color: ColorConstant
                                                       .buttonColor2),
                                             ),
-                                            child: Container(
-                                              height: 130,
-                                              width: screenWidth * 0.40,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                image: DecorationImage(
-                                                  image: NetworkImage(
-                                                      contest.coverImage),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
+                                            child: data[index]['image_path'] ==
+                                                        null ||
+                                                    data[index]['image_path'][0]
+                                                            ['path'] ==
+                                                        null
+                                                ? const SizedBox()
+                                                : Container(
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    height: 130,
+                                                    width: screenWidth * 0.40,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                    ),
+                                                    child: Container(
+                                                      height: 120,
+                                                      width: screenWidth * 0.40,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                      child: isSvgImage(
+                                                              data[index]
+                                                                  ['image'])
+                                                          ? SvgPicture.network(
+                                                              data[index]
+                                                                  ['image'],
+                                                              fit: BoxFit.cover,
+                                                            )
+                                                          : Image.network(
+                                                              data[index]
+                                                                  ['image'],
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                    ),
+                                                  ),
                                           ),
                                           Container(
                                             height: 150,

@@ -86,15 +86,16 @@ class ContestArtView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blue),
-                            shape: BoxShape.circle),
-                        child: profileImage != ''
-                            ? CircleAvatar(
-                                radius: 18,
-                                backgroundImage: NetworkImage(profileImage),
-                              )
-                            : const SizedBox(),),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue),
+                          shape: BoxShape.circle),
+                      child: profileImage != ''
+                          ? CircleAvatar(
+                              radius: 18,
+                              backgroundImage: NetworkImage(profileImage),
+                            )
+                          : const SizedBox(),
+                    ),
                     const SizedBox(width: 5),
                   ],
                 ),

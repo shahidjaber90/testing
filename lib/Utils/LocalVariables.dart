@@ -1,7 +1,6 @@
 String userEmail = '';
 String userName = '';
 
-
 class Contest {
   final int id;
   final String title;
@@ -42,4 +41,3 @@ class Contest {
     );
   }
 }
-

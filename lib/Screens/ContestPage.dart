@@ -31,6 +31,7 @@ class _ContestPageState extends State<ContestPage> {
   String userImage = '';
   String startDate = '';
   String endDate = '';
+  bool isLoading = false;
   // get user profile
   Future<Map<String, dynamic>> getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -64,6 +65,9 @@ class _ContestPageState extends State<ContestPage> {
   // get contests
   List<Map<String, dynamic>> data = [];
   Future<List<dynamic>> getContests() async {
+    setState(() {
+      isLoading = true;
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String myToken = prefs.getString('getaccesToken').toString();
     final Uri url = Uri.parse(
@@ -87,6 +91,7 @@ class _ContestPageState extends State<ContestPage> {
 
           setState(() {
             data = contest;
+            isLoading = false;
           });
         }
         //
@@ -100,10 +105,16 @@ class _ContestPageState extends State<ContestPage> {
         });
         return jsonData['arts'][0];
       } else {
+        setState(() {
+          isLoading = false;
+        });
         throw Exception(
             'API call failed with status code: ${response.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       throw Exception('Error: $e');
     }
   }
@@ -241,166 +252,177 @@ class _ContestPageState extends State<ContestPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          data.isEmpty
-                              ? LottieBuilder.asset(
-                                  'assets/lottie/noDataFound.json')
-                              : Expanded(
-                                  child: ListView.builder(
-                                    physics: const BouncingScrollPhysics(),
-                                    itemCount: data.length,
-                                    itemBuilder: (context, index) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ContestArtView(
-                                                artImage: data[index]
-                                                    ['user_art_image'],
-                                                profileImage: data[index]
-                                                    ['user_profile_image'],
+                          isLoading
+                              ? Expanded(
+                                  child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: ColorConstant.buttonColor2,
+                                  ),
+                                ))
+                              : data.isEmpty
+                                  ? LottieBuilder.asset(
+                                      'assets/lottie/noDataFound.json')
+                                  : Expanded(
+                                      child: ListView.builder(
+                                        physics: const BouncingScrollPhysics(),
+                                        itemCount: data.length,
+                                        itemBuilder: (context, index) {
+                                          return GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ContestArtView(
+                                                    artImage: data[index]
+                                                        ['user_art_image'],
+                                                    profileImage: data[index]
+                                                        ['user_profile_image'],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: CardWidget(
+                                              width: double.infinity,
+                                              cardColor: ColorConstant
+                                                  .buttonColor2
+                                                  .withOpacity(0.20),
+                                              height: 150.0,
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    height: 150,
+                                                    width: screenWidth * 0.40,
+                                                    padding:
+                                                        const EdgeInsets.all(2),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      border: Border.all(
+                                                          color: ColorConstant
+                                                              .buttonColor2),
+                                                    ),
+                                                    child: Container(
+                                                      height: 130,
+                                                      width: screenWidth * 0.40,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(data[
+                                                                  index][
+                                                              'user_art_image']),
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    height: 150,
+                                                    width: screenWidth * 0.50,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 5),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      color: ColorConstant
+                                                          .whiteColor,
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          'Which on is the Winner for you?',
+                                                          style: GoogleFonts
+                                                              .playfairDisplay(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                        SingleChildScrollView(
+                                                          scrollDirection:
+                                                              Axis.horizontal,
+                                                          child: Row(
+                                                            children: [
+                                                              data[index]['winner'] ==
+                                                                      0
+                                                                  ? Text(
+                                                                      'Winner is Pending',
+                                                                      style: GoogleFonts
+                                                                          .playfairDisplay(
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                        fontSize:
+                                                                            14,
+                                                                        color: ColorConstant
+                                                                            .buttonColor2,
+                                                                      ),
+                                                                    )
+                                                                  : Text(
+                                                                      data[index]
+                                                                          [
+                                                                          'winner'],
+                                                                      style: GoogleFonts
+                                                                          .playfairDisplay(
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                        fontSize:
+                                                                            14,
+                                                                        color: ColorConstant
+                                                                            .buttonColor2,
+                                                                      ),
+                                                                    ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Container(
+                                                              decoration: BoxDecoration(
+                                                                  border: Border.all(
+                                                                      color: Colors
+                                                                          .blue),
+                                                                  shape: BoxShape
+                                                                      .circle),
+                                                              child: data[index]
+                                                                          [
+                                                                          'user_profile_image'] !=
+                                                                      ''
+                                                                  ? CircleAvatar(
+                                                                      radius:
+                                                                          18,
+                                                                      backgroundImage:
+                                                                          NetworkImage(data[index]
+                                                                              [
+                                                                              'user_profile_image']),
+                                                                    )
+                                                                  : null,
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 5),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           );
                                         },
-                                        child: CardWidget(
-                                          width: double.infinity,
-                                          cardColor: ColorConstant.buttonColor2
-                                              .withOpacity(0.20),
-                                          height: 150.0,
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                height: 150,
-                                                width: screenWidth * 0.40,
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  border: Border.all(
-                                                      color: ColorConstant
-                                                          .buttonColor2),
-                                                ),
-                                                child: Container(
-                                                  height: 130,
-                                                  width: screenWidth * 0.40,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    image: DecorationImage(
-                                                      image: NetworkImage(data[
-                                                              index]
-                                                          ['user_art_image']),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 150,
-                                                width: screenWidth * 0.50,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8,
-                                                        horizontal: 5),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  color:
-                                                      ColorConstant.whiteColor,
-                                                ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      'Which on is the Winner for you?',
-                                                      style: GoogleFonts
-                                                          .playfairDisplay(
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                    SingleChildScrollView(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
-                                                      child: Row(
-                                                        children: [
-                                                          data[index]['winner'] ==
-                                                                  0
-                                                              ? Text(
-                                                                  'Winner is Pending',
-                                                                  style: GoogleFonts
-                                                                      .playfairDisplay(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontSize:
-                                                                        14,
-                                                                    color: ColorConstant
-                                                                        .buttonColor2,
-                                                                  ),
-                                                                )
-                                                              : Text(
-                                                                  data[index][
-                                                                      'winner'],
-                                                                  style: GoogleFonts
-                                                                      .playfairDisplay(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontSize:
-                                                                        14,
-                                                                    color: ColorConstant
-                                                                        .buttonColor2,
-                                                                  ),
-                                                                ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: [
-                                                        Container(
-                                                          decoration: BoxDecoration(
-                                                              border: Border.all(
-                                                                  color: Colors
-                                                                      .blue),
-                                                              shape: BoxShape
-                                                                  .circle),
-                                                          child: data[index][
-                                                                      'user_profile_image'] !=
-                                                                  ''
-                                                              ? CircleAvatar(
-                                                                  radius: 18,
-                                                                  backgroundImage:
-                                                                      NetworkImage(
-                                                                          data[index]
-                                                                              [
-                                                                              'user_profile_image']),
-                                                                )
-                                                              : null,
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 5),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
+                                      ),
+                                    ),
                         ],
                       ),
                     ),

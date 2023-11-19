@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:colorvelvetus/Providers/ResetPassword.dart';
 import 'package:colorvelvetus/Utils/Colors.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
@@ -130,11 +131,14 @@ class WorldMapPainter extends CustomPainter {
     ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     List<int> pngBytes = byteData!.buffer.asUint8List();
     //New line added by sabeel
+    // ignore: use_build_context_synchronously
     showAlertDialog(
         context,
         Image.memory(
-          byteData!.buffer.asUint8List(),
-          fit: BoxFit.fitWidth,
+          byteData.buffer.asUint8List(),
+          height: 250,
+          width: 250,
+          // fit: BoxFit.cover,
         ));
     //End line
     Directory tempDir = await getTemporaryDirectory();
@@ -153,7 +157,15 @@ class WorldMapPainter extends CustomPainter {
               ? CircularProgressIndicator(
                   color: ColorConstant.buttonColor2,
                 )
-              : const Text("OK");
+              : Text(
+                  "OK",
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 16,
+                    color: ColorConstant.buttonColor2,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.6,
+                  ),
+                );
         },
       ),
       onPressed: () async {
@@ -162,7 +174,15 @@ class WorldMapPainter extends CustomPainter {
       },
     );
     Widget backButton = TextButton(
-      child: Text("Cancel"),
+      child: Text(
+        "Cancel",
+        style: GoogleFonts.playfairDisplay(
+          fontSize: 16,
+          color: ColorConstant.buttonColor2,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.6,
+        ),
+      ),
       onPressed: () {
         Navigator.pop(context);
       },
@@ -170,12 +190,23 @@ class WorldMapPainter extends CustomPainter {
 
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("My title"),
-      content: Container(
-        height: 250,
-        width: 250,
-        child: img,
+      backgroundColor: Colors.grey.shade900,
+      title: Text(
+        "Add to My Art",
+        style: GoogleFonts.playfairDisplay(
+          fontSize: 20,
+          color: ColorConstant.buttonColor2,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.6,
+        ),
       ),
+      // content: Container(
+      //   alignment: Alignment.center,
+      //   height: 250,
+      //   width: 230,
+      //   padding: const EdgeInsets.all(10),
+      //   child: img,
+      // ),
       actions: [
         backButton,
         okButton,

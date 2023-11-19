@@ -251,10 +251,10 @@ class _PaintingRootPageState extends State<PaintingRootPage> {
                 ),
                 child: Center(
                   child: InteractiveViewer(
-                    onInteractionEnd: (details) {
-                      print("ZoomChecker ended $details");
-                      WorldMap.pickerColor = ColorConstant.tempColor;
-                    },
+                    // onInteractionEnd: (details) {
+                    //   print("ZoomChecker ended $details");
+                    //   WorldMap.pickerColor = ColorConstant.tempColor;
+                    // },
                     onInteractionUpdate: (details) {
                       ColorConstant.tempColor = WorldMap.pickerColor;
                       WorldMap.pickerColor = null;
